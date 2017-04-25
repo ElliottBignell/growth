@@ -105,6 +105,10 @@ public:
     virtual meshfile& operator<<( triangle& tri ) { out( tri );     return *this; }
 };
 
+///The meshnull class is a null pattern for mesh file output
+///!This file serves as a null pattern so that the mesh file output
+///can be dealt with by reference. To catch bugs, assertions can be 
+///included in the public methods. 
 class meshnull : public meshfile
 {
     static string noname;
@@ -120,6 +124,7 @@ public:
 
 string meshnull::noname;
 
+///The meshpov class outputs the mesh in a POVRay-compliant (*.pov) format
 class meshpov : public meshfile
 {
 public:
@@ -200,6 +205,7 @@ public:
     } 
 };
 
+///The meshpov class outputs the mesh in a Blender-compliant (*.x3d) format
 class meshx3d : public meshfile
 {
 public:
