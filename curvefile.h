@@ -3,27 +3,27 @@
 ///@author  Elliott Bignell <elliott.bignell@gmail.com>
 ///@version 1.0
 ///
-///@section LICENSE
-///
-///This program is free software; you can redistribute it and/or
-///modify it under the terms of the GNU General Public License as
-///published by the Free Software Foundation; either version 2 of
-///the License, or (at your option) any later version.
-///
-///This program is distributed in the hope that it will be useful, but
-///WITHOUT ANY WARRANTY; without even the implied warranty of
-///MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-///General Public License for more details at
-///https://www.gnu.org/copyleft/gpl.html
-///
-///@section DESCRIPTION
-///
-///
 
 #include <fstream>
 #include <sstream>
 #include <string>
 
+//!  curveFile class representing a curve as a slightly smart array of points
+/*!
+  curveFile class abstracts a text file (gnuplot .dat file) containing a curve as a series
+  of x-y values. This text file defines the cross-sectional shape of a form. 
+  The .dat file can be directly loaded and plotted from gnuplot
+  to facilitate designing the cross-section. On construction, the class
+  loads the file into vectors of numeric values for the x and y ordinates.
+  The class exposes these using the element operator as if they were a simple array of points.
+
+The file uses the .dat format accepted by gnuplot, so that one can
+call up a visual representation of the cross-section from the command line.
+The following command called from gnuplot will show the inner and outer 
+forms on a single graph:
+
+<i>plot  "outer.dat" using 1:2 smooth bezier title "outer" with lines, "inner.dat" using 1:2 smooth bezier title "inner" with lines</i>
+*/
 class curveFile
 {
 private:

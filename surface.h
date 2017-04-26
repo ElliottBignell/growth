@@ -3,25 +3,16 @@
 ///@author  Elliott Bignell <elliott.bignell@gmail.com>
 ///@version 1.0
 ///
-///@section LICENSE
-///
-///This program is free software; you can redistribute it and/or
-///modify it under the terms of the GNU General Public License as
-///published by the Free Software Foundation; either version 2 of
-///the License, or (at your option) any later version.
-///
-///This program is distributed in the hope that it will be useful, but
-///WITHOUT ANY WARRANTY; without even the implied warranty of
-///MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-///General Public License for more details at
-///https://www.gnu.org/copyleft/gpl.html
-///
-///@section DESCRIPTION
-///
-///
 
 #include "const.h"
 
+///The surface class is the base class for surface contour classes
+///!The surface class is the base class for surface contour classes.
+///Specialisations of the base class implement contours to adjust the geometry
+///of generated shapes. These classes are simple operators with a function-call
+///member taking a triangle, normal and two angles for X and Y. Based on these they return an adjusted  
+///point value representing a change in the height or other position of the
+/// input position. For instance, a ridge could be added at particular spacings alonf the surface.
 class surface
 {
 protected:
@@ -36,6 +27,10 @@ surface::~surface()
 {
 }
 
+///The outside class is the operator defining the shell outer surface
+/*!The outside class is the operator defining any ridges and other features 
+on the shell's outer surface
+*/
 class outside : public surface
 {
 public:
@@ -53,6 +48,9 @@ public:
     }
 };
 
+///The inside class is the operator defining the shell inner surface
+///!The inside class is the operator defining the ridges or any other features 
+///on the shell's inner surface
 class inside : public surface
 {
 public:

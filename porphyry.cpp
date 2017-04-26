@@ -3,40 +3,24 @@
 ///@author  Elliott Bignell <elliott.bignell@gmail.com>
 ///@version 1.0
 ///
-///@section LICENSE
-///
-///This program is free software; you can redistribute it and/or
-///modify it under the terms of the GNU General Public License as
-///published by the Free Software Foundation; either version 2 of
-///the License, or (at your option) any later version.
-///
-///This program is distributed in the hope that it will be useful, but
-///WITHOUT ANY WARRANTY; without even the implied warranty of
-///MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-///General Public License for more details at
-///https://www.gnu.org/copyleft/gpl.html
-///
-///@section DESCRIPTION
-///
-///
 
-// Models for the simulations of the color pattern on the shells of mollusks
-// see also Meinhardt,H. and Klingler,M. (1987) J. theor. Biol 126, 63-69
-// see also H.Meinhardt "Algorithmic beauty of sea shells"
-// (Springer Verlag) (c) H.Meinhardt, Tübingen
+/// Models for the simulations of the color pattern on the shells of mollusks
+/// see also Meinhardt,H. and Klingler,M. (1987) J. theor. Biol 126, 63-69
+/// see also H.Meinhardt "Algorithmic beauty of sea shells"
+/// (Springer Verlag) (c) H.Meinhardt, Tübingen
 
-//This is a short version of a program for the simulations of the color
-//patterns on tropical sea shells, here //Oliva porphyria'.
-//An autocatalytic activator a(i) leads to a burst-like activation
-//that is regulated back by the action of an inhibitor b(i). The life
-//time of the inhibitor is regulated via a hormone c, that is
-//homogeneously distributed along the growing edge. Whenever the number
-//of activated cells cells become too small, active cells remain activated
-//until backwards waves are triggered
+///This is a short version of a program for the simulations of the color
+///patterns on tropical sea shells, here //Oliva porphyria'.
+///An autocatalytic activator a(i) leads to a burst-like activation
+///that is regulated back by the action of an inhibitor b(i). The life
+///time of the inhibitor is regulated via a hormone c, that is
+///homogeneously distributed along the growing edge. Whenever the number
+///of activated cells cells become too small, active cells remain activated
+///until backwards waves are triggered
 
-//The program runs with the interpreter QBASIC, but this is very slow.
-//Better are the compiler Power Basic, Microsoft QB 4.5, Professional
-//Basic 7.1, and Visual Basic für DOS. A compiled version is included
+///The program runs with the interpreter QBASIC, but this is very slow.
+///Better are the compiler Power Basic, Microsoft QB 4.5, Professional
+///Basic 7.1, and Visual Basic für DOS. A compiled version is included
 
 #include <iostream>
 #include <boost/math/special_functions/fpclassify.hpp>
