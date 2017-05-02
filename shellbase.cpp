@@ -11,7 +11,6 @@
 #include <functional>
 #include <iterator>
 #include <iostream>
-#include <vector>
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
@@ -30,40 +29,10 @@
 #include "surface.h"
 #include "surfacecol.h"
 #include "bezier.h"
+#include "whorl.h"
 
 using namespace std;
 using namespace boost::numeric::ublas;
-
-static float shrinkystage = 0.99;
-static float shrinkxstage = 0.75;
-static float shrinkstage = 0.5;
-static unsigned int cone = 10000;
-static unsigned int whorls = 3;
-static float R = 2.5;
-static float r = 1.0;
-static float degX = 0.05;
-static float degZ = 2;
-static float degY = degZ * 0.00375;
-static unsigned int circle = 360 / degZ;
-static float shrink = pow( shrinkstage, 1.0 / circle );
-static float tY     = shrinkystage / circle * degY;
-static string bezierpts = "{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8},{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8};{0.0,5.8},{-1.0,5.8},{1.0,-13.0},{1.0,-13.0}";
-
-static float thetaX = degX / ( 180 / pi );
-static float thetaY = degY / ( 180 / pi );
-static float thetaZ = degZ / ( 180 / pi );
-
-matrix< float >  metafocus( 1, 3 );
-matrix< float > translateY( 1, 3 );
-matrix< float >    rotateX( 3, 3 );
-matrix< float >    rotateY( 3, 3 );
-matrix< float >    rotateZ( 3, 3 );
-matrix< float >          p( 1, 3 );
-matrix< float >     origin( 1, 3 );
-
-std::vector< matrix< float > > shape;
-std::vector< matrix< float > > normals;
-std::vector< matrix< float > > record;
 
 std::shared_ptr< meshfile > test( new meshnull );
 
@@ -283,142 +252,6 @@ void init()
     p( 0, 2 ) = 0;
 }
 
-void addStep( bezier &bz, matrix< float >& wallSegment, const unsigned int n, const float section )
-{
-    float f = static_cast< float >( n ) / section;
-
-    matrix< float >         t( 1, 4 );
-    matrix< float >         s( p    );
-
-    t( 0, 0 ) = 1;
-    t( 0, 1 ) = f;
-    t( 0, 2 ) = f * f;
-    t( 0, 3 ) = f * t( 0, 2 );
-
-    matrix< float > tZ = prod( bz.get(), wallSegment );
-
-    matrix< float > rZ( prod( t, tZ ) );
-
-    s( 0, 0 ) = rZ( 0, 0 );
-    s( 0, 1 ) = rZ( 0, 1 );
-    s( 0, 2 ) = 0;
-
-    record.push_back( origin + s );
-    shape.push_back( s );
-}
-
-unsigned int initCircle( const string datfile )
-{
-    static bezier bz;
-
-    curveFile wall( datfile );    
-
-    matrix< float > rotateNormal( 3, 3 );
-
-    rotateNormal( 2, 2 ) =              1;
-    rotateNormal( 0, 0 ) =  cos( pi / 2.0 );
-    rotateNormal( 0, 1 ) = -sin( pi / 2.0 );
-    rotateNormal( 1, 0 ) =  sin( pi / 2.0 );
-    rotateNormal( 1, 1 ) =  cos( pi / 2.0 );
-
-    static const float xlim = abs( r );
-//    static const float ylim = xlim / 2.0;
-
-    std::vector < matrix< float > > wallPoints;
-
-    record.clear();
-     shape.clear();
-   normals.clear();
-
-    record.reserve( circle + 2);
-     shape.reserve( circle + 2 );
-   normals.reserve( circle + 2 );
-
-    unsigned int m = 0;
-
-    unsigned int segments = wall.size();
-
-    matrix< float > wallSegment( 4, 2 );
-
-    for ( unsigned int segment = 0; segment < segments; segment++ ) {
-
-        for ( unsigned int n = 0; n < 4; n++ ) {
-
-            // Outer wall
-            wallSegment( n, 0 ) =  wall[ m   ].first * xlim;
-            wallSegment( n, 1 ) =  wall[ m++ ].second;
-        }
-
-        m--;
-
-        wallPoints.push_back( wallSegment );
-    }
-
-    const float halfcircle   = static_cast< float >( circle ) / segments;
-    const unsigned int section = halfcircle / 2.0;
-
-    std::vector < matrix< float > >::iterator it = wallPoints.begin();
-
-    matrix< float >& wallStep = *it;
-
-    while ( it != wallPoints.end() ) {
-
-        wallStep = *it++;
-
-        for ( unsigned int n = 0; n < section; n++ ) {
-            addStep( bz, wallStep, n, section );
-        }
-    }
-
-    it = wallPoints.begin();
-    //wallStep = *it;
-
-    //addStep( bz, wallStep, 0, section );
-
-    //wallStep = *it;
-
-    while ( it++ != wallPoints.end() ) {
-
-        //wallStep = *it++;
-
-        for ( unsigned int n = 0; n < section; n++ ) {
-
-            matrix< float > normal(
-                shape[ ( n + section - 1 ) % section ] - 
-                shape[ ( n + section + 1 ) % section ]
-                );
-
-            normals.push_back( prod( normal, rotateNormal ) / 2.0 );
-        }
-    }
-
-    normals.push_back( normals[ 0 ] );
-
-    return section;
-}
-
-void triangle( unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int col  )
-{
-    matrix< int > indices( 1, 3 );
-
-    indices( 0, 0 ) = pos;
-    indices( 0, 1 ) = pos1;
-    indices( 0, 2 ) = pos2;
-
-    (*test) << meshpov::index( indices, col );
-}
-
-void triangle( meshpov::triangle& q, meshpov::normal& norm, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int col )
-{
-    matrix< int > indices( 1, 3 );
-
-    indices( 0, 0 ) = pos;
-    indices( 0, 1 ) = pos1;
-    indices( 0, 2 ) = pos2;
-
-    (*test) << q << norm << meshpov::index( indices, col );
-}
-
 template < unsigned int n > void stateOut( pigmentmap& pm, unsigned int whorlno, unsigned int whorlpos  )
 {
     int st = pm.isOn( whorlpos + n, whorlno );
@@ -436,7 +269,7 @@ template < unsigned int n > void stateOut( pigmentmap& pm, unsigned int whorlno,
     }
 }
 
-void whorl( const string datfile, const matrix< float > &p, surface& surf, colour& col )
+/*void whorl( const string datfile, const matrix< float > &p, surface& surf, colour& col )
 {
     static gaussian distr( 1, 0.01 );
 
@@ -540,7 +373,8 @@ void whorl( const string datfile, const matrix< float > &p, surface& surf, colou
     for ( n = 1; n < closedcircle; n++ ) {
         triangle( ( n - 1 ) % closedcircle, n % closedcircle, n, 0 );
     }
-}
+}*/
+
 
 int main( int argc, char **argv )
 {
@@ -665,13 +499,11 @@ int main( int argc, char **argv )
 
     init();
 
-    outside os;
-    inside  is;
-    insidecol ic;
-    peakcol pc;
-
-    whorl( "outer.dat", p, os, pc );
-    whorl( "inner.dat", p, is, ic );
+    shapeCurve< outside, peakcol   > outer( test, "outer.dat" );
+    shapeCurve<  inside, insidecol > inner( test, "inner.dat" );
+    
+    outer.whorl( p );
+    inner.whorl( p );
 
     test->close();
 

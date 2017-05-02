@@ -24,14 +24,19 @@
 //#include <sstream>
 //#include <string>
 //
+//! The bezier class abstracts a two-dimensional matrix of float
+/*! values used to compute the points along a first-order bezier
+    curve
+*/
 class bezier
 {
 private:
-    matrix< float > transform;
+    matrix< float > transform; ///< Two-dimensional matrix of constant numeric values used to compute a bezier curve
 
 public:
-    bezier() 
-        : transform( 4, 4 )
+    //! The constructor simply packs the values for the transformation into the
+    //! initialised two-dimensional matrix
+    bezier() : transform( 4, 4 )
     {   
         static float transforms[] = {
             1, 0, 0, 0,
@@ -50,5 +55,5 @@ public:
         }
     }
 
-    const matrix< float >& get() { return transform; }
+    const matrix< float >& get() { return transform; } ///<Simple const getter to access the matrix as read-only
 };

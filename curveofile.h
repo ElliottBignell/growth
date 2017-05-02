@@ -81,13 +81,13 @@ public:
         remove( "/tmp/normals.txt" );
     }
 
-    virtual void out( index indices ) = 0;
-    virtual void out( triangle& tri ) = 0;
-    virtual void out( normal&  norm ) = 0;
+    virtual void out( const index indices ) = 0;
+    virtual void out( const triangle& tri ) = 0;
+    virtual void out( const normal&  norm ) = 0;
 
-    virtual meshfile& operator<<( index indices ) { out( indices ); return *this; }
-    virtual meshfile& operator<<( normal&  norm ) { out( norm );    return *this; }
-    virtual meshfile& operator<<( triangle& tri ) { out( tri );     return *this; }
+    virtual meshfile& operator<<(       index indices ) { out( indices ); return *this; }
+    virtual meshfile& operator<<( const normal&  norm ) { out( norm );    return *this; }
+    virtual meshfile& operator<<(       triangle& tri ) { out( tri );     return *this; }
 };
 
 ///The meshnull class is a null pattern for mesh file output
@@ -102,9 +102,9 @@ public:
     meshnull() : meshfile( noname ) {}
 
     virtual void write( ifstream&, ifstream&, ifstream& ) {}
-    virtual void out( index indices ) {}
-    virtual void out( triangle& tri ) {}
-    virtual void out( normal&  norm ) {}
+    virtual void out( const index indices ) {}
+    virtual void out( const triangle& tri ) {}
+    virtual void out( const normal&  norm ) {}
 };
 
 string meshnull::noname;
@@ -150,7 +150,7 @@ public:
 
     }
 
-    virtual void out( index indices )
+    virtual void out( const index indices )
     {
         if ( 
                indices.first( 0, 0 ) == indices.first( 0, 1 ) ||
@@ -169,7 +169,7 @@ public:
               << ">, " << indices.second;
     } 
 
-    virtual void out( triangle& tri )
+    virtual void out( const triangle& tri )
     {
         vectors << ( vectorCnt++ > 0 ? "," : "" ) << endl
                 << "\t<"
@@ -179,7 +179,7 @@ public:
                 << ">";
     } 
 
-    virtual void out( normal& norm )
+    virtual void out( const normal& norm )
     {
         normals << ( normalCnt++ > 0 ? "," : "" ) << endl
                 << "\t<"
@@ -230,7 +230,9 @@ public:
             << "\t</IndexedFaceSet>" << endl
             << endl
             << "\t<Appearance>" << endl
-            << "\t\t<Material diffuseColor='1 0 0' />" << endl
+            //<< "\t\t<Material diffuseColor='1 0 0' />" << endl
+            << "\t\t<Material ambientIntensity='0.25' diffuseColor='0.748014 0.62085 0.0' shininess='0.939394' specularColor='0.860606 0.860606 0.860599' transparency='0.34749'/> " << endl
+            //<< "\t\t<Material diffuseColor='1 0 0' specularColor='0.823529 0.705882 0.54902'/> " << endl
             << "\t</Appearance>" << endl
             << endl
             << "</Shape>" << endl
@@ -245,7 +247,7 @@ public:
 
     }
 
-    virtual void out( index indices )
+    virtual void out( const index indices )
     {
         if ( 
                indices.first( 0, 0 ) == indices.first( 0, 1 ) ||
@@ -262,7 +264,7 @@ public:
               << " -1";
     } 
 
-    virtual void out( triangle& tri )
+    virtual void out( const triangle& tri )
     {
         vectors << "\t\t\t" << tri( 0, 0 )
                 << " "    << tri( 0, 1 )
@@ -271,7 +273,7 @@ public:
         faceCnt++;
     } 
 
-    virtual void out( normal& norm )
+    virtual void out( const normal& norm )
     {
         normals << "\t\t\t" << 1
                 << " "      << 0
