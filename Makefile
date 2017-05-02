@@ -1,6 +1,7 @@
 CC=g++
 CFLAGS=-c -Wall -Wno-unused-local-typedefs -Wno-deprecated-declarations
 INC=-L/usr/share -L/usr/local/lib -I/usr/local/include -I/home/elliott/boost_1_56_0
+DOXYGEN = doxygen
 
 all: test
 debug: CFLAGS +=  -g -O0 -Wextra
@@ -16,3 +17,5 @@ porphyry.o: porphyry.cpp
 	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++0x porphyry.cpp
 clean:
 	rm -rf *o test
+docs:
+	$(DOXYGEN) Doxyfile
