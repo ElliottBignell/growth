@@ -23,6 +23,8 @@
 #include <boost/lexical_cast.hpp>
 #include <getopt.h>
 #include "gaussian.h"
+#include "distnull.h"
+#include "distflare.h"
 #include "porphyry.h"
 #include "curvefile.h"
 #include "curveofile.h"
@@ -100,7 +102,7 @@ public:
     { 
         if ( 0 == active && inactive <= 0 ) {
 
-            if ( concentration > 0.1 || gauss() > probability ) {
+            if ( concentration > 0.1 || gauss( 0, 0 ) > probability ) {
 
                 active = 6;
                 inactive = 2;
@@ -229,9 +231,6 @@ void init()
 //    translateX( 0, 0 ) = tX;
 //    translateX( 0, 1 ) = 0;
 //    translateX( 0, 2 ) = 0;
-    translateY( 0, 0 ) = 0;
-    translateY( 0, 1 ) = tY;
-    translateY( 0, 2 ) = 0;
     rotateX( 0, 0 ) =              1;
     rotateX( 1, 1 ) =  cos( thetaX );
     rotateX( 2, 1 ) = -sin( thetaX );
@@ -268,113 +267,6 @@ template < unsigned int n > void stateOut( pigmentmap& pm, unsigned int whorlno,
         break;
     }
 }
-
-/*void whorl( const string datfile, const matrix< float > &p, surface& surf, colour& col )
-{
-    static gaussian distr( 1, 0.01 );
-
-    matrix< float >          s( p    );
-    matrix< float >       site( 1, 1 );
-
-    unsigned int n = initCircle( datfile );
-    unsigned int point = 0;
-
-    matrix< float > cX = rotateX;
-    matrix< float > cY = rotateY;
-
-    const unsigned int closedcircle = shape.size();
-
-    pigmentmap pm( closedcircle, cone * whorls );
-
-    float ycircle = circle;
-
-    double lshrink = pow( shrink, 1.0 / ( closedcircle - 1 ) );
-    double yshrink = pow( lshrink, 1.0 / ( closedcircle - 1 ) );
-    double sshrink = lshrink;
-    double theta = 0.0;
-    double thetaLimit = pi * 4.0 * whorls;
-
-    unsigned int whorlstep = ( closedcircle - 4 ) * 2;
-
-    meshpov::triangle q;
-    meshpov::normal  normal;
-
-    assert( theta < thetaLimit );
-
-    while ( theta < thetaLimit ) {
-
-        unsigned int whorlno = 0;
-
-        float dis = distr();
-
-        assert( closedcircle > 0 );
-
-        for ( unsigned int wh = 0; wh < closedcircle; wh++, n++ ) {
-
-            unsigned int whorlpos = n % closedcircle;
-
-              shape[ whorlpos ] *= sshrink;
-            normals[ whorlpos ] *= sshrink;
-
-            state s( state_nums( 3, 0, whorlno, whorlpos ) );
-
-            meshpov::triangle    pt( metafocus + shape[ whorlpos ] * dis );
-            normal = normals[ whorlpos ];
-
-            q = origin + prod( surf( pt, normal, theta, static_cast< float >( whorlpos * closedcircle ) / ( pi * 0.0 ) ), cY );
-
-            if ( ( whorlpos ) > ( closedcircle / 2.0 ) || n > closedcircle ) {
-
-                triangle( q, normal, point, point + 1,             point + whorlstep + 1, col( theta, thetaY ) );
-                triangle( q, normal, point, point + whorlstep + 1, point + whorlstep,     col( theta, thetaY ) );
-
-                point++;
-
-                record[ whorlpos ] = q;
-            }
-
-            cY  = prod( cY, rotateY );
-
-            translateY *= yshrink;
-
-            origin += translateY * shrinkxstage;
-
-            theta += abs( thetaY );
-    
-            whorlno++;
-        }
-
-        metafocus *= pow( yshrink, closedcircle ); 
-
-        dis = distr();
-
-        thetaY  /= pow( yshrink, 1.0 / ycircle );
-        sshrink *= pow( yshrink, 1.0 / ycircle );
-
-        double thetaYdis = thetaY * dis;
-
-        rotateY( 1, 1 ) =              1;
-        rotateY( 0, 0 ) =  cos( thetaYdis );
-        rotateY( 2, 0 ) =  sin( thetaYdis );
-        rotateY( 0, 2 ) = -sin( thetaYdis );
-        rotateY( 2, 2 ) =  cos( thetaYdis );
-
-        ycircle = 360.0 / thetaYdis * 2;
-
-        lshrink = pow( shrink, 1.0 / ycircle );
-    }
-
-    for ( unsigned int wh = 0; wh < closedcircle; wh++, n++ ) {
-        triangle( q, normal, point, point, point, 0 );
-    }
-
-    matrix< float > end = origin + prod( metafocus, cY );
-
-    for ( n = 1; n < closedcircle; n++ ) {
-        triangle( ( n - 1 ) % closedcircle, n % closedcircle, n, 0 );
-    }
-}*/
-
 
 int main( int argc, char **argv )
 {
@@ -439,7 +331,7 @@ int main( int argc, char **argv )
             break;
         case 'k':
             sscanf( optarg, "%f", &x );
-            shrinkstage = x;
+            data.shrinkstage = x;
             break;
         case 'b':
             bezierpts = optarg;
@@ -459,20 +351,22 @@ int main( int argc, char **argv )
     cone = whorls * 360 / (degY * degZ);
     thetaZ = degZ / ( 180 / pi );
     //shrink = shrinkstage;
-    shrink = shrinkstage;
-    shrinkystage = pow( shrinkstage, 1.0 / circle );
-    //tY = shrinkystage / circle * degY;
-    tY = shrinkystage / circle * degY; // / 36000.0;
+    data.shrink = data.shrinkstage;
+    shrinkystage = pow( data.shrinkstage, 1.0 / circle );
+    //data.tY = shrinkystage / circle * degY;
+    data.tY = shrinkystage / circle * degY; // / 36000.0;
 
-    cout << "Whorls: "       << whorls         << endl 
-         << "Z-Resolution: " << degZ           << endl
-         << "Y-Resolution: " << degY           << endl
-         << "Shrink-Stage: " << shrinkstage    << endl
-         << "Shrink-Y: "     << shrinkystage   << endl
-         << "Shrink: "       << shrink         << endl
-         << "Circle-divs: "  << circle         << endl
-         << "Translate: "    << tY             << endl
-         << "Taper: "        << shrinkxstage   << endl;
+    data.update();
+
+    cout << "Whorls: "       << whorls              << endl 
+         << "Z-Resolution: " << degZ                << endl
+         << "Y-Resolution: " << degY                << endl
+         << "Shrink-Stage: " << data.shrinkstage    << endl
+         << "Shrink-Y: "     << shrinkystage        << endl
+         << "Shrink: "       << data.shrink         << endl
+         << "Circle-divs: "  << circle              << endl
+         << "Translate: "    << data.tY             << endl
+         << "Taper: "        << shrinkxstage        << endl;
 
     if (optind < argc) {
 
@@ -497,13 +391,18 @@ int main( int argc, char **argv )
         test = std::shared_ptr< meshfile >( new meshpov( filename ) );
     }
 
-    init();
-
     shapeCurve< outside, peakcol   > outer( test, "outer.dat" );
     shapeCurve<  inside, insidecol > inner( test, "inner.dat" );
+
+    outer.stitchToCurve( inner.shape, inner.normals, 0, inner.point );
     
+    init();
     outer.whorl( p );
+
+    init();
     inner.whorl( p );
+
+//    outer.stitchToCurve( inner.shape, inner.normals, 0, inner.point );
 
     test->close();
 

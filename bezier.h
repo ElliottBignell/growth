@@ -32,11 +32,12 @@ class bezier
 {
 private:
     matrix< float > transform; ///< Two-dimensional matrix of constant numeric values used to compute a bezier curve
+    matrix< float > normal;    ///< Two-dimensional matrix of constant numeric values used to compute a bezier curve's normals
 
 public:
     //! The constructor simply packs the values for the transformation into the
     //! initialised two-dimensional matrix
-    bezier() : transform( 4, 4 )
+    bezier() : transform( 4, 4 ), normal( 3, 3 )
     {   
         static float transforms[] = {
             1, 0, 0, 0,
@@ -53,7 +54,23 @@ public:
                 transform( j, k ) = transforms[ n++ ];
             }
         }
+
+        static float normals[] = {
+            1, 0, 0,
+           -2, 2, 0,
+            1,-2, 1
+        };
+
+        n = 0;
+
+        for ( unsigned int j = 0; j < 3; j++ ) {
+
+            for ( unsigned int k = 0; k < 3; k++ ) {
+                normal( j, k ) = normals[ n++ ];
+            }
+        }
     }
 
-    const matrix< float >& get() { return transform; } ///<Simple const getter to access the matrix as read-only
+    const matrix< float >& get()       { return transform; } ///<Simple const getter to access the matrix as read-only
+    const matrix< float >& getNormal() { return normal; }    ///<Simple const getter to access the normals matrix as read-only
 };

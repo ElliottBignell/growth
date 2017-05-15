@@ -4,14 +4,14 @@
 ///@version 1.0
 ///
 
-#include <iostream>
+#ifndef _GAUSSIAN_H_INCLUDED_
+#define _GAUSSIAN_H_INCLUDED_
+
+#include "distbase.h"
 #include <boost/random.hpp>
 #include <boost/random/normal_distribution.hpp>
-#include <stdio.h>
 
-using namespace std;
-
-class gaussian
+class gaussian : public distribution
 {
     boost::mt19937 rng;
     boost::normal_distribution< double > nd;
@@ -28,8 +28,12 @@ public:
         rng.seed( time( 0 ) );
     }
 
-    double operator()()
+    virtual ~gaussian() {} 
+
+    virtual double operator()( double, double )
     {
         return var_nor();
     }
 };
+
+#endif //_GAUSSIAN_H_INCLUDED_

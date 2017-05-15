@@ -87,7 +87,7 @@ void pigmentmap::pattern()
 
         ax[ i ] = 0;    //Activator, general initial concentration
         bx[ i ] = 0.1;   //Inhibitor, general initial concentration
-        zx[ i ] = RA * (0.96 + 0.08 * gauss());//Fluctuation of the autocatalysis
+        zx[ i ] = RA * (0.96 + 0.08 * gauss( 0, 0 ) );//Fluctuation of the autocatalysis
     }
 
     float C = 0.5; //Hormone-concentration, homogeneous in all cells
@@ -96,7 +96,7 @@ void pigmentmap::pattern()
     while ( i < width ) { //initially active cells 
 
         ax[ i ] = 1;
-        i = i + 5.0 * gauss() + 10.0;
+        i = i + 5.0 * gauss( 0, 0 ) + 10.0;
     }
 
     static const float DAC = 1.0 - RA - 2.0 * DA; // These constant factors are used again and again
