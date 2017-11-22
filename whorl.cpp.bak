@@ -12,6 +12,7 @@
 template < typename SURF, typename COLOUR >
 shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const curveDef& wall ) 
     : meshFile( mf )
+    , origin( data )
 {
     static bezier bz;
 
@@ -170,6 +171,8 @@ void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution& r
 {
     const unsigned int closedcircle = bands.size();
 
+    float ycircle = whorlData::circle;
+
     while ( theta < thetaLimit ) {
 
         float ridgedis = ridgedistr( 0, 0 );
@@ -192,7 +195,11 @@ void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution& r
 
         ridgedis = ridgedistr( 0, 0 );
 
+        double thetaYdis = thetaY * ridgedis;
+
         initRotation( theta );
+
+        ycircle = 2.0f * pi / thetaYdis;
 
         scale /= pow( whorlData::shrinkxstage, 1.0 / ( whorlData::circle * 2.0f ) );
         translate /= pow( whorlData::shrinkxstage, 1.0 / ( whorlData::circle * 2.0f ) );
@@ -258,7 +265,7 @@ void shapeCurve< SURF, COLOUR >::addStep( bezier &bz, MF& wallSegment, const uns
     N( 0, 1 ) = deriv_y / atan_t;
     N( 0, 2 ) = 0;
 
-    record.push_back( s );
+    record.push_back( origin( s ) );
     shape.push_back( s );
     normals.push_back( N );
 }

@@ -12,10 +12,12 @@
 #include <boost/range/adaptors.hpp>
 #include <boost/range/combine.hpp>
 #include <vector>
-#include "transformation.h"
+#include "whorldata.h"
 #include "shapes.h"
 
 typedef matrix< float > MF;
+
+whorlData data;
 
 static unsigned int cone = 10000;
 static unsigned int whorls = 3;
@@ -47,7 +49,6 @@ class shapeCurve : public shapes
 
     std::vector< double > bands;
     std::shared_ptr< meshfile > meshFile;
-    transformation origin;
 
     SURF surf;
     COLOUR colour;
