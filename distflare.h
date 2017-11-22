@@ -12,9 +12,10 @@
 class flare : public distribution
 {
     unsigned int cnt;
+    unsigned int halving;
 
 public:
-    flare() : cnt ( 0 )
+    flare( unsigned int h ) : cnt ( 0 ), halving( h )
     {
     }
 
@@ -22,7 +23,7 @@ public:
 
     virtual double operator()( double, double )
     {
-        return 1.0 + pow( 0.1, ++cnt );
+        return 1.0 + 0.2 * pow( 0.5, static_cast< float >( ++cnt ) / halving );
     }
 };
 

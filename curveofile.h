@@ -8,6 +8,7 @@
 ///
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
@@ -25,7 +26,7 @@ using namespace boost::numeric::ublas;
 class meshfile
 {
 public:
-    typedef std::pair< matrix< int >, unsigned int > index;
+    typedef std::pair< matrix< int >, unsigned long > index;
     typedef matrix< float  > triangle;
     typedef matrix< double > normal;
 
@@ -35,7 +36,7 @@ protected:
     ofstream faces;
     ofstream normals;
     unsigned int vectorCnt;
-    unsigned int faceCnt;
+    unsigned int pointCnt;
     unsigned int textureCnt;
     unsigned int normalCnt;
 
@@ -45,17 +46,21 @@ protected:
         , faces( "/tmp/faces.txt", std::ofstream::out | std::ofstream::app )
         , normals( "/tmp/normals.txt", std::ofstream::out | std::ofstream::app )
         , vectorCnt( 0 )
-        , faceCnt( 0 )
+        , pointCnt( 0 )
         , textureCnt( 3 )
         , normalCnt( 0 )
     {
         //faces << "< 0, 0, 0>," << endl;
         //vectors << "< 0, 0, 0>," << endl;
         //vectorCnt++;
-        //faceCnt++;
+        //pointCnt++;
     }
 
-    ~meshfile() { }
+    ~meshfile() 
+    { 
+        std::cout << "Points:    " << vectorCnt << std::endl;
+        std::cout << "Triangles: " << pointCnt  << std::endl;
+    }
 
     virtual void write( ifstream&, ifstream&, ifstream& ) = 0;
 
@@ -138,7 +143,7 @@ public:
             << "\ttexture {  insideTexture_ }" << endl
             << "}" << endl
             << "face_indices {" << endl
-            << "\t" << faceCnt << ","
+            << "\t" << pointCnt << ","
             << ifaces.rdbuf() << endl
             << "}" << endl
             << "}" << endl;
@@ -161,7 +166,7 @@ public:
             return;
         }
 
-        faces << ( faceCnt++ > 0 ? "," : "" ) << endl 
+        faces << ( pointCnt++ > 0 ? "," : "" ) << endl 
               << "\t<"
               << indices.first( 0, 0 ) << ","
               << indices.first( 0, 1 ) << ","
@@ -193,20 +198,21 @@ public:
 ///The meshpov class outputs the mesh in a Blender-compliant (*.x3d) format
 class meshx3d : public meshfile
 {
+    static const unsigned int precision = 5;
+    static constexpr double tens = pow( precision, precision );
+
+    std::string colours;
+
 public:
     meshx3d( string& name ) : meshfile( name ) {}
+    ~meshx3d()
+    {
+        //std::cout << "Colours: " << colours.size() / 2 << std::endl;
+    }
 
     virtual void write( ifstream& ivectors, ifstream& ifaces, ifstream& inormals )
     {
         ofstream combined_file( filename.c_str() ) ;
-
-        std::string colours;
-
-        colours.reserve( faceCnt * 2 );
-
-        for ( unsigned int n = 0; n < faceCnt; n++ ) {
-            colours.append( "0 " );
-        }
 
         combined_file 
             << "<X3D>" << endl
@@ -216,15 +222,16 @@ public:
             << "\t<IndexedFaceSet solid=\"false\" colorPerVertex=\"true\"" << endl
             << "\t\tcoordIndex=\""
             << ifaces.rdbuf() << endl
-            << "\t\t\"" << endl
-            << "\t\tcolorIndex=\"" << endl
-            << colours  << endl
+            //<< "\t\t\"" << endl
+            //<< "\t\tcolorIndex=\"" << endl
+            //<< colours  << endl
             << "\t\t\" >" << endl
             << "\t<Coordinate" << endl
             << "\t\tpoint=\"" << endl
             << ivectors.rdbuf()
             << "\t\t\" />" << endl
             << "\t\t<Color color=\"" << endl
+            << colours  << endl
             << "1 0 0" << endl
             << "\t\t\" />" << endl
             << "\t</IndexedFaceSet>" << endl
@@ -243,8 +250,11 @@ public:
             //<< "finish { reflection .3 phong 2} "
 
         combined_file.close();
+    }
 
-
+    bool equal( auto lhs, auto rhs )
+    {
+        return ( trunc( tens * lhs ) == trunc( tens * rhs ) );
     }
 
     virtual void out( const index indices )
@@ -259,25 +269,39 @@ public:
         }
 
         faces << "\n\t\t\t" << indices.first( 0, 0 )
-              << " "      << indices.first( 0, 1 )
-              << " "      << indices.first( 0, 2 )
+              << " "        << indices.first( 0, 1 )
+              << " "        << indices.first( 0, 2 )
               << " -1";
+
+        float blue   = static_cast<float>( ( indices.second & 0xFF0000 ) > 16 );
+        float green  = static_cast<float>( ( indices.second & 0x00FF00 ) >  8 );
+        float red    = static_cast<float>( ( indices.second & 0x0000FF ) >  0 );
+
+        std::string col = std::to_string( blue ) + " " + std::to_string( green ) + " " +  std::to_string( red ) + "\n";
+
+        colours.append( col );
+
+        vectorCnt++;
     } 
 
     virtual void out( const triangle& tri )
     {
-        vectors << "\t\t\t" << tri( 0, 0 )
-                << " "    << tri( 0, 1 )
-                << " "    << tri( 0, 2 )
-                << ",\n";
-        faceCnt++;
+        using namespace std;
+
+        vectors << "\t\t\t" 
+                << ( ( pointCnt++ > 0 ) ? ',' : ' ' )
+                        << fixed << setprecision( 5 ) << tri( 0, 0 )
+                << " "  << fixed << setprecision( 5 ) << tri( 0, 1 )
+                << " "  << fixed << setprecision( 5 ) << tri( 0, 2 )
+                << "\n";
     } 
 
     virtual void out( const normal& norm )
     {
         normals << "\t\t\t" << 1
+                << ( ( normalCnt++ > 0 ) ? ',' : ' ' )
                 << " "      << 0
                 << " "      << 0
-                << ",\n";
+                << "\n";
     } 
 };

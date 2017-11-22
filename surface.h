@@ -20,7 +20,7 @@ protected:
     virtual ~surface() = 0;
 
 public:
-    virtual matrix< float > operator()( meshfile::triangle&, meshfile::normal&, float, float ) = 0;
+    virtual matrix< float > operator()( const meshfile::triangle&, const meshfile::normal&, float, float ) = 0;
 };
 
 surface::~surface()
@@ -36,7 +36,7 @@ class outside : public surface
 public:
     virtual ~outside() {}
 
-    virtual matrix< float > operator()( meshfile::triangle& point, meshfile::normal& normals, float, float )
+    virtual matrix< float > operator()( const meshfile::triangle& point, const meshfile::normal& normals, float, float )
     {
         meshfile::normal bump( normals );
 
@@ -56,7 +56,7 @@ class inside : public surface
 public:
     virtual ~inside() {}
 
-    virtual matrix< float > operator()( meshfile::triangle& point, meshfile::normal&, float thetaX, float theta )
+    virtual matrix< float > operator()( const meshfile::triangle& point, const meshfile::normal&, float thetaX, float theta )
     {
         meshfile::normal bump( point );
 

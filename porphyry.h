@@ -15,7 +15,7 @@ public:
     pigmentmap( unsigned int circle, unsigned int cone ) ;
 
     void pattern();
-    unsigned int isOn( unsigned int x, unsigned int y );
+    unsigned int isOn( float x, float y );
 };
 
 

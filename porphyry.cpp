@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <boost/math/special_functions/fpclassify.hpp>
+#include "const.h"
 #include "gaussian.h"
 #include "porphyry.h"
 
@@ -36,17 +37,27 @@ pigmentmap::pigmentmap( unsigned int circle, unsigned int cone )
     , length( cone / width )
     , activation( width * length, 0 )
 {
+    std::cout << "Pattern width: " << width << std::endl;
+    std::cout << "Pattern length: " << length << std::endl;
     pattern();
 }
 
-unsigned int pigmentmap::isOn( unsigned int x, unsigned int y ) 
+unsigned int pigmentmap::isOn( float x, float y ) 
 { 
-    assert(  ( length - y ) * width + x  < activation.size() );
+    auto X = x / (2.0 * pi) * width;
+    auto Y = y / (2.0 * pi) * length;
+    auto index = X + Y * width;
 
-    if ( activation[ ( length - y ) * width + x ] > 0.5 ) {
+    if ( index >= activation.size() ) {
+
+        //std::cout << X << " " << Y << " " << x << " " << y << " " << activation.size() << std::endl;
+        return 0;
+    }
+
+    if ( activation[ index ] > 0.5 ) {
         return 2;
     }
-    if ( activation[ ( length - y ) * width + x ] > 0.25 ) {
+    else if ( activation[ index ] > 0.25 ) {
         return 1;
     }
     else {
