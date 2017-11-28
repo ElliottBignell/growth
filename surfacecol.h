@@ -19,7 +19,7 @@ public:
     State( const State& s ) : n( s.n ) {}
 
     template < unsigned int N >
-    const unsigned int get() const { return boost::get< N >( n ); }
+    unsigned int get() const { return boost::get< N >( n ); }
 
     State& operator++() { boost::get< 0 >( n )++; return *this; }
 };
@@ -122,7 +122,7 @@ class insidecol : public colour
 public:
     virtual ~insidecol() {}
 
-    virtual unsigned int operator()( float thetaX, float theta )
+    virtual unsigned int operator()( float /*thetaX*/, float /*theta*/ )
     {
         return 2;
     }
@@ -133,7 +133,7 @@ class peakcol : public colour
 public:
     virtual ~peakcol() {}
 
-    virtual unsigned int operator()( float thetaX, float theta )
+    virtual unsigned int operator()( float /*thetaX*/, float theta )
     {
         //float wh  = 360.0 * theta  / ( 2.0 * pi );
         //float whX = 360.0 * thetaX / ( 2.0 * pi );
@@ -148,7 +148,7 @@ class troughcol : public colour
 public:
     virtual ~troughcol() {}
 
-    virtual unsigned int operator()( float thetaX, float theta )
+    virtual unsigned int operator()( float /*thetaX*/, float theta )
     {
         //float wh  = 360.0 * theta  / ( 2.0 * pi );
         //float whX = 360.0 * thetaX / ( 2.0 * pi );

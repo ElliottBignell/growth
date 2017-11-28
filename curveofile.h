@@ -107,9 +107,9 @@ public:
     meshnull() : meshfile( noname ) {}
 
     virtual void write( ifstream&, ifstream&, ifstream& ) {}
-    virtual void out( const index indices ) {}
-    virtual void out( const triangle& tri ) {}
-    virtual void out( const normal&  norm ) {}
+    virtual void out( const index )                       {}
+    virtual void out( const triangle& )                   {}
+    virtual void out( const normal& )                     {}
 };
 
 string meshnull::noname;
@@ -210,7 +210,7 @@ public:
         //std::cout << "Colours: " << colours.size() / 2 << std::endl;
     }
 
-    virtual void write( ifstream& ivectors, ifstream& ifaces, ifstream& inormals )
+    virtual void write( ifstream& ivectors, ifstream& ifaces, ifstream& )
     {
         ofstream combined_file( filename.c_str() ) ;
 
@@ -296,7 +296,7 @@ public:
                 << "\n";
     } 
 
-    virtual void out( const normal& norm )
+    virtual void out( const normal& )
     {
         normals << "\t\t\t" << 1
                 << ( ( normalCnt++ > 0 ) ? ',' : ' ' )

@@ -39,9 +39,9 @@ auto zip_range(Conts&... conts)
 template < typename SURF, typename COLOUR >
 class shapeCurve : public shapes
 {
-    MF    rotate{ 3, 3 };
-    MF translate{ 1, 3 };
-    MF     scale{ 3, 3 };
+    MF    rotate{ 4, 4 };
+    MF translate{ 4, 4 };
+    MF     scale{ 4, 4 };
 
     float thetaX{ whorlData::degX };
     float thetaY{ whorlData::degY };
