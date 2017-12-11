@@ -21,6 +21,7 @@
 #include "boost/tuple/tuple.hpp"
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
 #include <getopt.h>
 #include "gaussian.h"
 #include "distnull.h"
@@ -31,6 +32,17 @@
 #include "surfacecol.h"
 #include "bezier.h"
 #include "whorl.h"
+#include "xml.h"
+
+#ifdef MAIN_TEST
+/* This main is provided for unit test of the class. */
+
+int main()
+{
+   return 0;
+}
+#endif
+
 
 using namespace std;
 using namespace boost::numeric::ublas;
@@ -126,7 +138,8 @@ int main( int argc, char **argv )
 {
     int c;
 
-    string filename = "meshpov.pov" ; 
+    string filename   = "meshpov.pov" ;
+    string configFile;
 
     std::unique_ptr< curveExpression > innerEx;
     std::unique_ptr< curveExpression > outerEx;
@@ -136,7 +149,7 @@ int main( int argc, char **argv )
         c = getopt(
             argc, 
             argv, 
-            "dW:dX:dZ:tx:ty:r:R:T:C:k:b:p:q:o:?"
+            "dW:dX:dZ:tx:ty:r:R:T:C:k:b:p:q:o:X:?"
         );
 
         if (c == -1)
@@ -155,10 +168,10 @@ int main( int argc, char **argv )
             sscanf( optarg, "%f", &x );
             whorls = x;
             break;
-        case 'X':
-            sscanf( optarg, "%f", &x );
-            whorlData::degX = x;
-            break;
+//         case 'X':
+//             sscanf( optarg, "%f", &x );
+//             whorlData::degX = x;
+//             break;
         //case 'Y':
             //sscanf( optarg, "%f", &x );
             //whorlData::degY = x;
@@ -197,6 +210,9 @@ int main( int argc, char **argv )
         case 'q':
             bezierpts = optarg;
             outerEx = std::unique_ptr< curveExpression >( std::make_unique< curveExpression >( bezierpts ) );
+            break;
+        case 'X':
+            configFile = optarg;
             break;
         case 'o':
             filename = optarg;
@@ -264,6 +280,13 @@ int main( int argc, char **argv )
 //    outer.stitchToCurve( inner.shape, inner.normals, 0, inner.point );
 
     test->close();
+
+    if ( !configFile.empty() ) {
+
+        GetConfig appConfig;
+
+        appConfig.readConfigFile(configFile);
+    }
 
     return -1;
 }
