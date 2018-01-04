@@ -223,15 +223,13 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, std::vector< MF >& 
     unsigned int size = curve.size2();
     unsigned int step = size * 2;
 
-    std::cout << curve.size1() << "," << curve.size2() << std::endl;
-
     for ( unsigned int whorlpos = 0; whorlpos < size; whorlpos++ ) {
 
         meshpov::normal  normal = norms[ whorlpos ];
 
         float angleX = static_cast< float >( whorlpos ) / size * pi * 2.0;
 
-        matrix_slice< MF > s( curve, slice( whorlpos, 1, 1 ) , slice( whorlpos, 2, 4 ) );
+        matrix_slice< MF > s( curve, slice( 0, 1, 4 ) , slice( whorlpos, 1, 1 ) );
 
         triangle( s, normal, index, index + 1,        index + step + 1, colour( angleX, cell / whorls ) );
         triangle( s, normal, index, index + step + 1, index + step,     colour( angleX, cell / whorls ) );
@@ -289,8 +287,6 @@ void shapeCurve< SURF, COLOUR >::triangle( unsigned int pos, unsigned int pos1, 
 template < typename SURF, typename COLOUR >
 void shapeCurve< SURF, COLOUR >::triangle( matrix_slice< matrix< float > >& q, const meshpov::normal& norm, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
 {
-    std::cout << "q " << q.size1() << "," << q.size2() << ":" << pos2 << std::endl;
-
     matrix< int > indices( 1, 4 );
     matrix< float > Q( 1, 4 );
 
@@ -300,8 +296,8 @@ void shapeCurve< SURF, COLOUR >::triangle( matrix_slice< matrix< float > >& q, c
     indices( 0, 3 ) = 1;
 
     Q( 0, 0 ) = q( 0, 0 );
-    Q( 0, 1 ) = q( 0, 1 );
-    Q( 0, 2 ) = q( 0, 2 );
+    Q( 0, 1 ) = q( 1, 0 );
+    Q( 0, 2 ) = q( 2, 0 );
     Q( 0, 3 ) = 1;
 
     (*meshFile) << Q << norm << meshpov::index( indices, colour );
