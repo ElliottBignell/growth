@@ -20,6 +20,9 @@
 ///
 ///
 
+using namespace std;
+using namespace boost::numeric::ublas;
+
 //#include <fstream>
 //#include <sstream>
 //#include <string>

@@ -7,9 +7,19 @@ all: test
 debug: CFLAGS +=  -g -O0 -Wextra
 debug: test
 
-test: shellbase.o gaussian.o porphyry.o distbase.o xml.o
-	$(CC) $(INC) shellbase.o gaussian.o porphyry.o distbase.o xml.o -o test -lreadline -lncurses -ltermcap -ldl -lboost_regex -lboost_iostreams -lxerces-c; \
+test: curveofile.o shellbase.o gaussian.o porphyry.o distbase.o xml.o shapes.o surface.o surfacecol.o whorl.o whorldata.o
+	$(CC) $(INC) shellbase.o whorldata.o whorl.o surface.o surfacecol.o shapes.o gaussian.o porphyry.o distbase.o xml.o -o test -lreadline -lncurses -ltermcap -ldl -lboost_regex -lboost_iostreams -lxerces-c; \
     ctags -R --c++-kinds=+p --fields=+iaS --extra=+q .
+shapes.o: shapes.cpp
+	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 shapes.cpp
+whorldata.o: whorldata.cpp
+	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 whorldata.cpp
+surfacecol.o: surfacecol.cpp
+	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 surfacecol.cpp
+surface.o: surface.cpp
+	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 surface.cpp
+curveofile.o: curveofile.cpp
+	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 curveofile.cpp
 shellbase.o: shellbase.cpp
 	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 shellbase.cpp
 gaussian.o: gaussian.cpp
@@ -20,8 +30,8 @@ distbase.o: distbase.cpp
 	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 distbase.cpp
 xml.o: xml.cpp
 	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 xml.cpp
-#whorl.o: whorl.cpp
-#	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 whorl.cpp
+whorl.o: whorl.cpp
+	$(CC) $(CFLAGS) $(INC) -lreadline -lncurses -ltermcap -ldl -std=c++14 whorl.cpp
 clean:
 	rm -rf *o test
 docs:

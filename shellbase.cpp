@@ -10,7 +10,6 @@
 #include <map>
 #include <functional>
 #include <iterator>
-#include <iostream>
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
@@ -48,6 +47,8 @@ using namespace std;
 using namespace boost::numeric::ublas;
 
 std::shared_ptr< meshfile > test;
+
+extern whorlData data;
 
 class cell
 {
@@ -147,10 +148,10 @@ int main( int argc, char **argv )
     while (1) {
 
         c = getopt(
-            argc, 
-            argv, 
-            "dW:dX:dZ:tx:ty:r:R:T:C:k:b:p:q:o:X:?"
-        );
+                argc, 
+                argv, 
+                "dW:dX:dZ:tx:ty:r:R:T:C:k:b:p:q:o:X:?"
+                );
 
         if (c == -1)
             break;
@@ -158,69 +159,69 @@ int main( int argc, char **argv )
         float x = 0.0;
 
         switch (c) {
-        case 't':
-            break;
-        case 'T':
-            sscanf( optarg, "%f", &x );
-            whorlData::shrinkxstage = x;
-            break;
-        case 'W':
-            sscanf( optarg, "%f", &x );
-            whorls = x;
-            break;
-//         case 'X':
-//             sscanf( optarg, "%f", &x );
-//             whorlData::degX = x;
-//             break;
-        //case 'Y':
-            //sscanf( optarg, "%f", &x );
-            //whorlData::degY = x;
-            //break;
-        case 'Z':
-            sscanf( optarg, "%f", &x );
-            whorlData::degZ = 2.0f * pi / ( 360.0f / x );
-            break;
-        case 'x':
-            sscanf( optarg, "%f", &x );
-            break;
-        case 'y':
-            sscanf( optarg, "%f", &x );
-            whorlData::degY = x;
-            break;
-        case 'R':
-            sscanf( optarg, "%f", &x );
-            shapes::R = x;
-            break;
-        case 'r':
-            sscanf( optarg, "%f", &x );
-            shapes::r = -x;
-            break;
-        case 'C':
-            sscanf( optarg, "%f", &x );
-            cone = x;
-            break;
-        case 'k':
-            sscanf( optarg, "%f", &x );
-            data.shrinkstage = x;
-            break;
-        case 'p':
-            bezierpts = optarg;
-            innerEx = std::unique_ptr< curveExpression >( std::make_unique< curveExpression >( bezierpts ) );
-            break;
-        case 'q':
-            bezierpts = optarg;
-            outerEx = std::unique_ptr< curveExpression >( std::make_unique< curveExpression >( bezierpts ) );
-            break;
-        case 'X':
-            configFile = optarg;
-            break;
-        case 'o':
-            filename = optarg;
-            break;
-        case '?':
-            break;
-        default:
-            printf("?? getopt returned character code 0%o ??\n", c);
+            case 't':
+                break;
+            case 'T':
+                sscanf( optarg, "%f", &x );
+                whorlData::shrinkxstage = x;
+                break;
+            case 'W':
+                sscanf( optarg, "%f", &x );
+                whorls = x;
+                break;
+                //         case 'X':
+                //             sscanf( optarg, "%f", &x );
+                //             whorlData::degX = x;
+                //             break;
+                //case 'Y':
+                //sscanf( optarg, "%f", &x );
+                //whorlData::degY = x;
+                //break;
+            case 'Z':
+                sscanf( optarg, "%f", &x );
+                whorlData::degZ = 2.0f * pi / ( 360.0f / x );
+                break;
+            case 'x':
+                sscanf( optarg, "%f", &x );
+                break;
+            case 'y':
+                sscanf( optarg, "%f", &x );
+                whorlData::degY = x;
+                break;
+            case 'R':
+                sscanf( optarg, "%f", &x );
+                shapes::R = x;
+                break;
+            case 'r':
+                sscanf( optarg, "%f", &x );
+                shapes::r = -x;
+                break;
+            case 'C':
+                sscanf( optarg, "%f", &x );
+                cone = x;
+                break;
+            case 'k':
+                sscanf( optarg, "%f", &x );
+                data.shrinkstage = x;
+                break;
+            case 'p':
+                bezierpts = optarg;
+                innerEx = std::make_unique< curveExpression >( bezierpts );
+                break;
+            case 'q':
+                bezierpts = optarg;
+                outerEx = std::make_unique< curveExpression >( bezierpts );
+                break;
+            case 'X':
+                configFile = optarg;
+                break;
+            case 'o':
+                filename = optarg;
+                break;
+            case '?':
+                break;
+            default:
+                printf("?? getopt returned character code 0%o ??\n", c);
         }
     }
 
@@ -235,14 +236,14 @@ int main( int argc, char **argv )
     data.update();
 
     cout << "Whorls: "       << whorls              << endl 
-         << "Z-Resolution: " << whorlData::degZ                << endl
-         << "Y-Resolution: " << whorlData::degY                << endl
-         << "Shrink-Stage: " << data.shrinkstage    << endl
-         << "Shrink-Y: "     << whorlData::shrinkystage        << endl
-         << "Shrink: "       << data.shrink         << endl
-         << "Circle-divs: "  << whorlData::circle              << endl
-         << "Translate: "    << data.tY             << endl
-         << "Taper: "        << whorlData::shrinkxstage        << endl;
+        << "Z-Resolution: " << whorlData::degZ                << endl
+        << "Y-Resolution: " << whorlData::degY                << endl
+        << "Shrink-Stage: " << data.shrinkstage    << endl
+        << "Shrink-Y: "     << whorlData::shrinkystage        << endl
+        << "Shrink: "       << data.shrink         << endl
+        << "Circle-divs: "  << whorlData::circle              << endl
+        << "Translate: "    << data.tY             << endl
+        << "Taper: "        << whorlData::shrinkxstage        << endl;
 
     if (optind < argc) {
 
@@ -267,26 +268,44 @@ int main( int argc, char **argv )
         test = std::shared_ptr< meshfile >( std::make_shared< meshpov >( filename ) );
     }
 
-    shapeCurve< outside, wedgescol   > outer( test, *outerEx );
-    shapeCurve<  inside, insidecol > inner( test, *innerEx );
+    if ( outerEx ) {
+
+        shapeCurve< outside, wedgescol   > outer( test, *outerEx );
+        outer.whorl();
+    }
+
+    if ( innerEx ) {
+
+        shapeCurve<  inside, insidecol > inner( test, *innerEx );
+        inner.whorl();
+    }
+
+
     //shapeCurve< outside, peakcol   > outer( test, curveFile( "outer.dat" ) );
-   // shapeCurve<  inside, insidecol > inner( test, curveFile( "inner.dat" ) );
+    // shapeCurve<  inside, insidecol > inner( test, curveFile( "inner.dat" ) );
 
-//    outer.stitchToCurve( inner.shape, inner.normals, 0, outer.point );
-    
-    outer.whorl();
-    inner.whorl();
-
-//    outer.stitchToCurve( inner.shape, inner.normals, 0, inner.point );
-
-    test->close();
+    //    outer.stitchToCurve( inner.shape, inner.normals, 0, outer.point );
+    //    outer.stitchToCurve( inner.shape, inner.normals, 0, inner.point );
 
     if ( !configFile.empty() ) {
 
         GetConfig appConfig;
 
-        appConfig.readConfigFile(configFile);
+        appConfig.readConfigFile( configFile );
+        appConfig.speak( test );
+        appConfig.clear();
+    
+        std::cout << "Done" << std::endl;
+
+        /* xmlDeriv< xml, curve > elem2; */
+        /* elem2.speak(); */
+
+        /* auto t2 = translate< xml, rendering >( elem2 ); */
+
+        /* t2->speak(); */
     }
+
+    test->close();
 
     return -1;
 }

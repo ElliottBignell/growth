@@ -9,6 +9,8 @@
 #ifndef __SHAPES_H_INCLUDED_
 #define __SHAPES_H_INCLUDED_
 
+using namespace boost::numeric::ublas;
+
 //! Abstracts a shape or aggregate of shapes combined into a single render
 /*! 
 */
@@ -26,16 +28,5 @@ public:
 public:
     virtual ~shapes() = 0;
 };
-
-shapes::~shapes()
-{
-}
-
-std::vector< matrix< float > > shapes::shape;
-std::vector< matrix< float > > shapes::normals;
-std::vector< matrix< float > > shapes::record;
-
-float shapes::R{ 2.5 };
-float shapes::r{ 1.0 };
 
 #endif // __SHAPES_H_INCLUDED_

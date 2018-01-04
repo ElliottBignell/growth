@@ -8,6 +8,8 @@
 #include <sstream>
 #include <string>
 
+using namespace std;
+
 //!  curveDef base class representing curves as a slightly smart array of points
 /*!
   curveDef classes abstract a curve as a series of x-y values. On construction, the class
@@ -22,16 +24,18 @@ protected:
     virtual ~curveDef() {}
 
 public:
-    std::pair< float, float > operator[]( unsigned int n ) const
+    pair< float, float > operator[]( unsigned int n ) const
     {
         assert( n < xarray.size() && n < yarray.size() );
 
-        return std::pair< float, float >( xarray[ n ], yarray[ n ] );
+        return pair< float, float >( xarray[ n ], yarray[ n ] );
     }
 
     std::vector< float >::size_type size() const { return ( xarray.size() - 1 ) / 3.0; }
 };
 
+class whorlData;
+extern whorlData data;
 
 //!  curveFile class representing a curve as a slightly smart array of points
 /*!
@@ -51,22 +55,22 @@ forms on a single graph:
 */
 class curveFile : public curveDef
 {
-    std::string filename;
+    string filename;
     ifstream file;
 
 public:
-    curveFile( const std::string name ) 
+    curveFile( const string name ) 
         : filename( name )
         , file( filename.c_str() )
     {   
-        std::string line;
+        string line;
         float a, b;
 
-        std::getline( file, line );
+        getline( file, line );
 
-        while ( std::getline( file, line ) )
+        while ( getline( file, line ) )
         {
-            std::istringstream iss( line );
+            istringstream iss( line );
        
             if ( !(iss >> a >> b) )
                 break;
@@ -97,38 +101,38 @@ public:
 class curveExpression : public curveDef
 {
 public:
-    curveExpression( const std::string expression ) 
+    curveExpression( const string expression ) 
     {   
         boost::regex expr{"(([{]([-+]?[0-9]*\\.*[0-9]+),(?3)[}])(,(?2))*)*"};
 
         if ( boost::regex_match( expression, expr ) ) {
 
-            std::string s = expression;
+            string s = expression;
 
             boost::regex segments{"([{]([-+]?[0-9]*\\.*[0-9]+),(?2)[}])*"};
 
-            boost::regex_token_iterator<std::string::iterator> it{
+            boost::regex_token_iterator<string::iterator> it{
                 s.begin(), 
                 s.end(),
                 segments
             };
-            boost::regex_token_iterator<std::string::iterator> end;
+            boost::regex_token_iterator<string::iterator> end;
 
             while ( it != end ) {
        
                 boost::regex coordinates{"[-+]?[0-9]*\\.*[0-9]+"};
 
-                boost::regex_token_iterator<std::string::iterator> pair{
+                boost::regex_token_iterator<string::iterator> pair{
                     it->begin(), 
                     it->end(),
                     coordinates
                 };
-                boost::regex_token_iterator<std::string::iterator> lastpair;
+                boost::regex_token_iterator<string::iterator> lastpair;
 
                 while ( pair != lastpair ) {
 
-                    xarray.push_back( std::stof( *pair++ ) );
-                    yarray.push_back( std::stof( *pair++ ) );
+                    xarray.push_back( stof( *pair++ ) );
+                    yarray.push_back( stof( *pair++ ) );
                 }
 
                 it++;
@@ -143,4 +147,25 @@ public:
     }
 
     virtual ~curveExpression() {}
+};
+
+
+class curveLiteral : public curveDef
+{
+public:
+    curveLiteral() 
+    {   
+    }
+
+    virtual ~curveLiteral() {}
+
+    curveLiteral& operator<<( const std::pair< float, float > f )
+    {
+        xarray.push_back( f.first  );
+        yarray.push_back( f.second );
+
+        return *this;
+    };
+
+    const size_t size() const { return xarray.size(); }
 };

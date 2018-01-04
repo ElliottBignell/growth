@@ -4,6 +4,9 @@
 ///@version 1.0
 ///
 
+#ifndef __SURFACE_H_INCLUDED__
+#define __SURFACE_H_INCLUDED__
+
 #include "const.h"
 
 ///The surface class is the base class for surface contour classes
@@ -22,10 +25,6 @@ protected:
 public:
     virtual matrix< float > operator()( const meshfile::triangle&, const meshfile::normal&, float, float ) = 0;
 };
-
-surface::~surface()
-{
-}
 
 ///The outside class is the operator defining the shell outer surface
 /*!The outside class is the operator defining any ridges and other features 
@@ -80,3 +79,5 @@ public:
 
     }
 };
+
+#endif //__SURFACE_H_INCLUDED__

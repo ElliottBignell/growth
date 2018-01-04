@@ -7,6 +7,9 @@
 ///as output files
 ///
 
+#ifndef __CURVEOFILE_H_INCLUDED__
+#define __CURVEOFILE_H_INCLUDED__
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -111,8 +114,6 @@ public:
     virtual void out( const triangle& )                   {}
     virtual void out( const normal& )                     {}
 };
-
-string meshnull::noname;
 
 ///The meshpov class outputs the mesh in a POVRay-compliant (*.pov) format
 class meshpov : public meshfile
@@ -305,3 +306,5 @@ public:
                 << "\n";
     } 
 };
+
+#endif // __CURVEOFILE_H_INCLUDED__

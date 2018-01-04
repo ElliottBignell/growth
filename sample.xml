@@ -9,38 +9,37 @@
            points = "13"
            type = "bezier"
            >
-                <point x="0" y="-9.5"/>
-                <point x="1" y="-9.5"/>
-                <point x="0.5" y="-8"/>
-                <point x="1" y="-7"/>
-                <point x="5" y="-6"/>
-                <point x="9" y="0.5"/>
-                <point x="1" y="0"/>
-                <point x="-5" y="0.5"/>
-                <point x="0" y="-6"/>
-                <point x="0" y="-7"/>
-                <point x="0" y="-8"/>
-                <point x="-0.5" y="-9.5"/>
-                <point x="0" y="-9.5"/>
+           <point x="0" y="-9.5"/>
+           <point x="1" y="-9.5"/>
+           <point x="0.5" y="-8"/>
+           <point x="1" y="-7"/>
+           <point x="5" y="-6"/>
+           <point x="9" y="0.5"/>
+           <point x="1" y="0"/>
+           <point x="-5" y="0.5"/>
+           <point x="0" y="-6"/>
+           <point x="0" y="-7"/>
+           <point x="0" y="-8"/>
+           <point x="-0.5" y="-9.5"/>
+           <point x="0" y="-9.5"/>
    </Curve>
    <Curve
            points = "13"
            type = "bezier"
            >
-                <point x="0" y="-10"/>
-                <point x="1" y="-10"/>
-                <point x="0.5" y="-8"/>
-                <point x="1" y="-7"/>
-                <point x="5" y="-6"/>
-                <point x="9" y="0.5"/>
-                <point x="1" y="0"/>
-                <point x="-5" y="0.5"/>
-                <point x="0" y="-6"/>
-                <point x="0" y="-7"/>
-                <point x="0" y="-8"/>
-                <point x="-0.5" y="-10"/>
-                <point x="0" y="10"/>
-       <point x="" y=""/>
+           <point x="0" y="-10"/>
+           <point x="1" y="-10"/>
+           <point x="0.5" y="-8"/>
+           <point x="1" y="-7"/>
+           <point x="5" y="-6"/>
+           <point x="9" y="0.5"/>
+           <point x="1" y="0"/>
+           <point x="-5" y="0.5"/>
+           <point x="0" y="-6"/>
+           <point x="0" y="-7"/>
+           <point x="0" y="-8"/>
+           <point x="-0.5" y="-10"/>
+           <point x="0" y="10"/>
    </Curve>
 </root>
 
