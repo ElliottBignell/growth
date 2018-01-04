@@ -68,11 +68,11 @@ void xmlDeriv< xml, curve >::speak( std::shared_ptr< meshfile > mf )
 { 
     // Already tested node as type element and of name "Curve".
     // Read attributes of element "Curve".
-    const XMLCh* xmlch_Points = domelem.getAttribute( &*ATTR_Points );
-    char* points = XMLString::transcode(xmlch_Points);
+    // const XMLCh* xmlch_Points = domelem.getAttribute( &*ATTR_Points );
+    //char* points = XMLString::transcode(xmlch_Points);
 
-    const XMLCh* xmlch_Type = domelem.getAttribute( &*ATTR_Type );
-    char* type = XMLString::transcode(xmlch_Type);
+    // const XMLCh* xmlch_Type = domelem.getAttribute( &*ATTR_Type );
+    //char* type = XMLString::transcode(xmlch_Type);
 
     shapeCurve< outside, wedgescol   > outer( mf, *expr );
     outer.whorl();
@@ -120,11 +120,11 @@ void  xmlDeriv< xml, spiral >::speak( std::shared_ptr< meshfile > )
 { 
     // Already tested node as type element and of name "Spiral".
     // Read attributes of element "Spiral".
-    const XMLCh* xmlch_Whorls = domelem.getAttribute( &*ATTR_Whorls );
-    char* whorls = XMLString::transcode(xmlch_Whorls);
+    // const XMLCh* xmlch_Whorls = domelem.getAttribute( &*ATTR_Whorls );
+    // char* whorls = XMLString::transcode(xmlch_Whorls);
 
-    const XMLCh* xmlch_Taper = domelem.getAttribute( &*ATTR_Taper );
-    char* taper = XMLString::transcode(xmlch_Taper);
+    // const XMLCh* xmlch_Taper = domelem.getAttribute( &*ATTR_Taper );
+//    char* taper = XMLString::transcode(xmlch_Taper);
 }
 
 /**

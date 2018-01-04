@@ -6,9 +6,9 @@
 
 using namespace boost::numeric::ublas;
 
-std::vector< matrix< float > > shapes::shape;
+matrix< float > shapes::shape;
+matrix< float > shapes::record;
 std::vector< matrix< float > > shapes::normals;
-std::vector< matrix< float > > shapes::record;
 
 float shapes::R{ 2.5 };
 float shapes::r{ 1.0 };

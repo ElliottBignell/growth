@@ -60,7 +60,7 @@ public:
     void whorl();
 
     //! Draws the triangles to link two curves into a closed strip
-    double stitchToCurve( std::vector< MF >&, std::vector< MF >&, float, unsigned int& );
+    double stitchToCurve( MF&, std::vector< MF >&, float, unsigned int& );
 
 private:
     //! Draws closed instances of the cross-sectional curve around a whole 360° loop
@@ -70,7 +70,7 @@ private:
     void triangle( unsigned int, unsigned int pos1, unsigned int pos2, unsigned int colour );
 
     //! Outputs a triangle and normal  to the mesh based on three points and a colour
-    void triangle( meshpov::triangle&, const meshpov::normal&, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
+    void triangle( matrix_slice< matrix< float > >&, const meshpov::normal&, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
 
     //! Computes a line segment of the Bezier curve using matrix transformations
     void addStep( bezier &, MF& wallS, const unsigned int, const float );
@@ -98,12 +98,10 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
 
     std::vector < MF > wallPoints;
 
-    record.clear();
-    shape.clear();
     normals.clear();
 
-    record.reserve( whorlData::circle + 2);
-    shape.reserve( whorlData::circle + 2 );
+    record.resize( 4, whorlData::circle + 2 );
+    shape.resize( 4, whorlData::circle + 2 );
     normals.reserve( whorlData::circle + 2 );
 
     unsigned int m = 0;
@@ -144,8 +142,8 @@ shapeCurve< SURF, COLOUR >::~shapeCurve()
 {
     ofstream vectors( "/home/elliott/shells/lines.txt", std::ofstream::out | std::ofstream::app );
 
-    for ( auto it = shape.begin(); it != shape.end(); it++ ) {
-        vectors << ( *it )( 0, 0 ) << " " << ( *it )( 0, 1 ) << std::endl;
+    for ( size_t it = 0; it != shape.size2(); it++ ) {
+        vectors << shape( it, 0 ) << " " << shape( it, 1 ) << std::endl;
     }
 }
 
@@ -158,7 +156,7 @@ void shapeCurve< SURF, COLOUR >::whorl()
     static gaussian dgauss( 1, 0.01 );
     static distnull dnull;
 
-    const unsigned int closedcircle = shape.size();
+    const unsigned int closedcircle = shape.size2();
 
     thetaX = whorlData::degX;
     thetaY = whorlData::degZ;
@@ -220,10 +218,12 @@ void shapeCurve< SURF, COLOUR >::whorl()
     taking the colour from a mapping based on the X and Y positions
 */
 template < typename SURF, typename COLOUR >
-double shapeCurve< SURF, COLOUR >::stitchToCurve( std::vector< MF >& curve, std::vector< MF >& norms, float cell, unsigned int& index )
+double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, std::vector< MF >& norms, float cell, unsigned int& index )
 {
-    unsigned int size = curve.size();
+    unsigned int size = curve.size2();
     unsigned int step = size * 2;
+
+    std::cout << curve.size1() << "," << curve.size2() << std::endl;
 
     for ( unsigned int whorlpos = 0; whorlpos < size; whorlpos++ ) {
 
@@ -231,8 +231,10 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( std::vector< MF >& curve, std:
 
         float angleX = static_cast< float >( whorlpos ) / size * pi * 2.0;
 
-        triangle( curve[ whorlpos ], normal, index, index + 1,        index + step + 1, colour( angleX, cell / whorls ) );
-        triangle( curve[ whorlpos ], normal, index, index + step + 1, index + step,     colour( angleX, cell / whorls ) );
+        matrix_slice< MF > s( curve, slice( whorlpos, 1, 1 ) , slice( whorlpos, 2, 4 ) );
+
+        triangle( s, normal, index, index + 1,        index + step + 1, colour( angleX, cell / whorls ) );
+        triangle( s, normal, index, index + step + 1, index + step,     colour( angleX, cell / whorls ) );
 
         index++;
 
@@ -247,31 +249,23 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( std::vector< MF >& curve, std:
     the primary axis until a whole whorl is completed.
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution& ridgedistr, double& theta )
+void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution&, double& theta )
 {
-    auto p1{ shape[ 0 ] };
-
     while ( theta < thetaLimit ) {
 
         meshpov::triangle simple( prod( rotate, scale ) );
         meshpov::triangle composite( prod( translate, simple ) );
 
-        //float ridgedis = ridgedistr( 0, 0 );
+        for( auto&& i: zip_range( normals ) ) { 
 
-        for( auto&& i: zip_range( normals, record, shape, bands ) ) { 
-
-            meshpov::triangle    pt( i.get< 1 >() );
-            //pt = prod( pt, scale * ridgedis * i.get< 3 >() );
-            //meshpov::triangle    surfaced( surf( pt, i.get< 0 >(), theta, static_cast< float >( whorlpos++ * closedcircle ) / ( pi * 2.0 ) ) );
+            meshpov::triangle    pt( i.get< 0 >() );
 
             i.get< 0 >() = prod( pt, composite );
-            i.get< 1 >() = prod( pt, composite ); 
         }
+        record = prod( composite, record ); 
         stitchToCurve( record, normals, theta, point );
 
         theta += whorlData::degZ;
-
-        //ridgedis = ridgedistr( 0, 0 );
     }
 }
 
@@ -293,16 +287,24 @@ void shapeCurve< SURF, COLOUR >::triangle( unsigned int pos, unsigned int pos1, 
 /*! 
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::triangle( meshpov::triangle& q, const meshpov::normal& norm, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
+void shapeCurve< SURF, COLOUR >::triangle( matrix_slice< matrix< float > >& q, const meshpov::normal& norm, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
 {
+    std::cout << "q " << q.size1() << "," << q.size2() << ":" << pos2 << std::endl;
+
     matrix< int > indices( 1, 4 );
+    matrix< float > Q( 1, 4 );
 
     indices( 0, 0 ) = pos;
     indices( 0, 1 ) = pos1;
     indices( 0, 2 ) = pos2;
     indices( 0, 3 ) = 1;
 
-    (*meshFile) << q << norm << meshpov::index( indices, colour );
+    Q( 0, 0 ) = q( 0, 0 );
+    Q( 0, 1 ) = q( 0, 1 );
+    Q( 0, 2 ) = q( 0, 2 );
+    Q( 0, 3 ) = 1;
+
+    (*meshFile) << Q << norm << meshpov::index( indices, colour );
 }
 
 /*! 
@@ -313,7 +315,8 @@ void shapeCurve< SURF, COLOUR >::addStep( bezier &bz, MF& wallSegment, const uns
     float f = static_cast< float >( n ) / section;
 
     MF         t( 1, 4 );
-    MF         s( 1, 4 );
+    matrix_column< matrix< float >>         s( shape, n );
+    matrix_column< matrix< float >>         r( record, n );
     MF         N( 1, 4 );
 
     t( 0, 0 ) = 1;
@@ -324,10 +327,12 @@ void shapeCurve< SURF, COLOUR >::addStep( bezier &bz, MF& wallSegment, const uns
     MF tZ = prod( bz.get(), wallSegment );
     MF rZ( prod( t, tZ ) );
 
-    s( 0, 0 ) = rZ( 0, 0 );
-    s( 0, 1 ) = rZ( 0, 1 );
-    s( 0, 2 ) = 0;
-    s( 0, 3 ) = 1;
+    s( 0 ) = rZ( 0, 0 );
+    s( 1 ) = rZ( 0, 1 );
+    s( 2 ) = 0;
+    s( 3 ) = 1;
+    
+    r = s;
 
     float deriv_x = rZ( 0, 0 );
     float deriv_y = rZ( 0, 1 );
@@ -338,8 +343,6 @@ void shapeCurve< SURF, COLOUR >::addStep( bezier &bz, MF& wallSegment, const uns
     N( 0, 2 ) = 0;
     N( 0, 3 ) = 1;
 
-    record.push_back( s );
-    shape.push_back( s );
     normals.push_back( N );
 }
 

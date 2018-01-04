@@ -21,9 +21,11 @@ public:
     static float r;
     unsigned int point{ 0 };
 
-    static std::vector< matrix< float > > shape;
+    static matrix< float > shape;
+    static matrix< float > record;
+    //static std::vector< matrix< float > > shape;
     static std::vector< matrix< float > > normals;
-    static std::vector< matrix< float > > record;
+    //static std::vector< matrix< float > > record;
 
 public:
     virtual ~shapes() = 0;

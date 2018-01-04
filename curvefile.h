@@ -167,5 +167,5 @@ public:
         return *this;
     };
 
-    const size_t size() const { return xarray.size(); }
+    size_t size() { return xarray.size(); }
 };
