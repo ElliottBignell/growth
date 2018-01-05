@@ -16,16 +16,15 @@ using namespace boost::numeric::ublas;
 */
 class shapes
 {
+protected:
+    matrix< float > shape;
+    matrix< float > record;
+    matrix< float > normals;
+
 public:
     static float R;
     static float r;
     unsigned int point{ 0 };
-
-    static matrix< float > shape;
-    static matrix< float > record;
-    //static std::vector< matrix< float > > shape;
-    static std::vector< matrix< float > > normals;
-    //static std::vector< matrix< float > > record;
 
 public:
     virtual ~shapes() = 0;
