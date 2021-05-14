@@ -11,9 +11,7 @@
 #include <functional>
 #include <iterator>
 #include <sstream>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <vector>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/operation.hpp>
@@ -48,8 +46,6 @@ using namespace boost::numeric::ublas;
 
 std::shared_ptr< meshfile > test;
 
-extern whorlData data;
-
 class cell
 {
     static float probability;
@@ -60,20 +56,24 @@ class cell
     float concentration;
     bool on;
 
+     whorlData &data;
+
 public:
-    cell()
+    cell( whorlData& d )
         : active( 0 )
         , inactive( 0 )
         , concentration( 0.0 )
         , on( false )
+        , data( d )
     {
     }
 
-    cell( const cell& c )
+    cell( const cell& c, whorlData& d )
         : active( c.active  )
         , inactive( c.inactive  )
         , concentration( c.concentration )
         , on( c.on )
+        , data( d )
     {
     }
 
@@ -135,6 +135,28 @@ public:
 float    cell::probability = 1.0;
 gaussian cell::gauss( 0.0, 0.5 );
 
+typedef std::list<std::string> StrList;
+
+void tokenise(const std::string& in, const std::string& delims, StrList& tokens)
+{
+    tokens.clear();
+
+    std::string::size_type pos_begin  , pos_end  = 0;
+    std::string input = in;
+
+    input.erase(std::remove_if(input.begin(),
+                              input.end(),
+                              [](auto x){return std::isspace(x);}),input.end());
+
+    while ((pos_begin = input.find_first_not_of(delims,pos_end)) != std::string::npos)
+    {
+        pos_end = input.find_first_of(delims,pos_begin);
+        if (pos_end == std::string::npos) pos_end = input.length();
+
+        tokens.push_back( input.substr(pos_begin,pos_end-pos_begin) );
+    }
+}
+
 int main( int argc, char **argv )
 {
     int c;
@@ -142,8 +164,19 @@ int main( int argc, char **argv )
     string filename   = "meshpov.pov" ;
     string configFile;
 
-    std::unique_ptr< curveExpression > innerEx;
-    std::unique_ptr< curveExpression > outerEx;
+    static string bezierpts = "{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8},{1.0,-13.0},{1.0,-1.8},{1.0,5.8};{0.0,5.8},{-1.0,5.8},{1.0,-13.0},{1.0,-13.0}";
+
+    StrList vtrToken;
+
+    tokenise( bezierpts, ";" , vtrToken);
+
+    std::vector< shared_ptr< curveExpression > > curveDefinitions;
+
+    for (auto &subExpression : vtrToken) {
+        curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
+    }
+
+    whorlData data;
 
     while (1) {
 
@@ -205,13 +238,16 @@ int main( int argc, char **argv )
                 data.shrinkstage = x;
                 break;
             case 'p':
+
                 bezierpts = optarg;
-                innerEx = std::make_unique< curveExpression >( bezierpts );
+                curveDefinitions.clear();
+
+                for (auto &subExpression : vtrToken) {
+                    curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
+                }
+
                 break;
-            case 'q':
-                bezierpts = optarg;
-                outerEx = std::make_unique< curveExpression >( bezierpts );
-                break;
+
             case 'X':
                 configFile = optarg;
                 break;
@@ -235,15 +271,15 @@ int main( int argc, char **argv )
 
     data.update();
 
-    cout << "Whorls: "       << whorls              << endl 
-        << "Z-Resolution: " << whorlData::degZ                << endl
-        << "Y-Resolution: " << whorlData::degY                << endl
-        << "Shrink-Stage: " << data.shrinkstage    << endl
-        << "Shrink-Y: "     << whorlData::shrinkystage        << endl
-        << "Shrink: "       << data.shrink         << endl
-        << "Circle-divs: "  << whorlData::circle              << endl
-        << "Translate: "    << data.tY             << endl
-        << "Taper: "        << whorlData::shrinkxstage        << endl;
+    cout << "Whorls: "       << whorls                   << endl 
+        << "Z-Resolution: " << whorlData::degZ           << endl
+        << "Y-Resolution: " << whorlData::degY           << endl
+        << "Shrink-Stage: " << data.shrinkstage          << endl
+        << "Shrink-Y: "     << whorlData::shrinkystage   << endl
+        << "Shrink: "       << data.shrink               << endl
+        << "Circle-divs: "  << whorlData::circle         << endl
+        << "Translate: "    << data.tY                   << endl
+        << "Taper: "        << whorlData::shrinkxstage   << endl;
 
     if (optind < argc) {
 
@@ -268,18 +304,11 @@ int main( int argc, char **argv )
         test = std::shared_ptr< meshfile >( std::make_shared< meshpov >( filename ) );
     }
 
-    if ( outerEx ) {
+    for ( auto curve: curveDefinitions ) {
 
-        shapeCurve< outside, wedgescol   > outer( test, *outerEx );
+        shapeCurve< outside, wedgescol   > outer( test, *curve, data );
         outer.whorl();
     }
-
-    if ( innerEx ) {
-
-        shapeCurve<  inside, insidecol > inner( test, *innerEx );
-        inner.whorl();
-    }
-
 
     //shapeCurve< outside, peakcol   > outer( test, curveFile( "outer.dat" ) );
     // shapeCurve<  inside, insidecol > inner( test, curveFile( "inner.dat" ) );
@@ -292,7 +321,7 @@ int main( int argc, char **argv )
         GetConfig appConfig;
 
         appConfig.readConfigFile( configFile );
-        appConfig.speak( test );
+        appConfig.speak( test, data );
         appConfig.clear();
     
         std::cout << "Done" << std::endl;

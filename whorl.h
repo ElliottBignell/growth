@@ -51,8 +51,10 @@ class shapeCurve : public shapes
     SURF surf;
     COLOUR colour;
 
+    whorlData &data;
+
 public:
-    shapeCurve( std::shared_ptr< meshfile >, const curveDef& );
+    shapeCurve( std::shared_ptr< meshfile >, const curveDef&, whorlData& );
     ~shapeCurve();
 
 public:
@@ -86,8 +88,9 @@ private:
 };
 
 template < typename SURF, typename COLOUR >
-shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const curveDef& wall ) 
+shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const curveDef& wall, whorlData& d ) 
     : meshFile( mf )
+    , data( d )
 {
     static bezier bz;
 

@@ -29,8 +29,3 @@
 using namespace std;
 using namespace boost::numeric::ublas;
 
-/*! 
-    TODO
-*/
-whorlData data;
-

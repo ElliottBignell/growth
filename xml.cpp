@@ -32,7 +32,7 @@
 using namespace std;
 using namespace boost::numeric::ublas;
 
-void releaseXmlString( XMLCh*& s )
+void releaseXmlString( XMLCh* s )
 {
     XMLString::release( &s );
 }
@@ -64,7 +64,7 @@ void xmlBase< t >::parse( DOMElement& element )
     }
 }
 
-void xmlDeriv< xml, curve >::speak( std::shared_ptr< meshfile > mf ) 
+void xmlDeriv< xml, curve >::speak( std::shared_ptr< meshfile > mf, whorlData& data ) 
 { 
     // Already tested node as type element and of name "Curve".
     // Read attributes of element "Curve".
@@ -74,7 +74,7 @@ void xmlDeriv< xml, curve >::speak( std::shared_ptr< meshfile > mf )
     // const XMLCh* xmlch_Type = domelem.getAttribute( &*ATTR_Type );
     //char* type = XMLString::transcode(xmlch_Type);
 
-    shapeCurve< outside, wedgescol   > outer( mf, *expr );
+    shapeCurve< outside, wedgescol   > outer( mf, *expr, data );
     outer.whorl();
 }
 
@@ -90,7 +90,7 @@ xmlDeriv< xml, curve >& xmlDeriv< xml, curve >::operator <<( pair< float, float 
     return *this;
 }
 
-void  xmlDeriv< xml, point >::speak( std::shared_ptr< meshfile > ) 
+void  xmlDeriv< xml, point >::speak( std::shared_ptr< meshfile >, whorlData& ) 
 {
 }
 
@@ -116,7 +116,7 @@ void xmlDeriv< xml, point >::parse( DOMElement& elem )
     xmlBase::parse( elem ); 
 }
 
-void  xmlDeriv< xml, spiral >::speak( std::shared_ptr< meshfile > ) 
+void  xmlDeriv< xml, spiral >::speak( std::shared_ptr< meshfile >, whorlData& ) 
 { 
     // Already tested node as type element and of name "Spiral".
     // Read attributes of element "Spiral".
@@ -191,10 +191,10 @@ GetConfig::~GetConfig()
    }
 }
 
-void GetConfig::speak( std::shared_ptr< meshfile > mf ) 
+void GetConfig::speak( std::shared_ptr< meshfile > mf, whorlData& data ) 
 {
     if ( theRoot ) {
-        theRoot->speak( mf );
+        theRoot->speak( mf, data );
     }
 }
 

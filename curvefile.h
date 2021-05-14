@@ -35,7 +35,6 @@ public:
 };
 
 class whorlData;
-extern whorlData data;
 
 //!  curveFile class representing a curve as a slightly smart array of points
 /*!
@@ -102,28 +101,29 @@ class curveExpression : public curveDef
 {
 public:
     curveExpression( const string expression ) 
-    {   
-        boost::regex expr{"(([{]([-+]?[0-9]*\\.*[0-9]+),(?3)[}])(,(?2))*)*"};
+    {
+        boost::regex expr{R"(([{][+-]?\d+(.\d+)?,[+-]?\d+(.\d+)?[}][;,])*[{][+-]?\d+(.\d+)?,[+-]?\d+(.\d+)?[}])"};
+        boost::cmatch what;
 
-        if ( boost::regex_match( expression, expr ) ) {
+        if ( boost::regex_match( expression.c_str(), what, expr ) ) {
 
             string s = expression;
 
-            boost::regex segments{"([{]([-+]?[0-9]*\\.*[0-9]+),(?2)[}])*"};
+            boost::regex segments{R"(([{][+-]?\d+(.\d+)?,[+-]?\d+(.\d+)?[}])*)"};
 
             boost::regex_token_iterator<string::iterator> it{
-                s.begin(), 
+                s.begin(),
                 s.end(),
                 segments
             };
             boost::regex_token_iterator<string::iterator> end;
 
             while ( it != end ) {
-       
+
                 boost::regex coordinates{"[-+]?[0-9]*\\.*[0-9]+"};
 
                 boost::regex_token_iterator<string::iterator> pair{
-                    it->begin(), 
+                    it->begin(),
                     it->end(),
                     coordinates
                 };

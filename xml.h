@@ -54,9 +54,9 @@ enum nodes {
 
 template < types t >
 class visitor;
-typedef std::unique_ptr< XMLCh, void(*)( XMLCh*& ) > xmlString;
+typedef std::unique_ptr< XMLCh, void(*)( XMLCh* ) > xmlString;
 
-void releaseXmlString( XMLCh*& s );
+void releaseXmlString( XMLCh* s );
 
 template < types t >
 class xmlBase
@@ -82,7 +82,7 @@ public:
     static std::shared_ptr< xmlBase > make( string s, DOMElement& elem ) { return registry[ s ]( elem ); }
 
     virtual void setparent( xmlBase< t >* r ) { parent = r; }
-    virtual void speak( std::shared_ptr< meshfile > ) = 0;
+    virtual void speak( std::shared_ptr< meshfile >, whorlData& ) = 0;
 
     void setchild(  std::shared_ptr< xmlBase > r ) { children.push_back( r ); }
 
@@ -126,11 +126,11 @@ public:
 
     virtual void parse( DOMElement& elem ) { xmlBase::parse( elem ); }
 
-    virtual void speak( std::shared_ptr< meshfile > mf ) 
+    virtual void speak( std::shared_ptr< meshfile > mf, whorlData& data ) 
     { 
         cout << "Root" << endl; 
 
-        for ( std::shared_ptr< xmlBase >& p: children ) { p->speak( mf ); }
+        for ( std::shared_ptr< xmlBase >& p: children ) { p->speak( mf, data ); }
     }
 };
 
@@ -151,7 +151,7 @@ public:
 
     virtual void parse( DOMElement& elem ) { xmlBase::parse( elem ); }
 
-    virtual void speak( std::shared_ptr< meshfile > );
+    virtual void speak( std::shared_ptr< meshfile >, whorlData& );
 };
 
 template <>
@@ -167,7 +167,7 @@ public:
 
     virtual void parse( DOMElement& elem ) { xmlBase::parse( elem ); }
 
-    virtual void speak( std::shared_ptr< meshfile > );
+    virtual void speak( std::shared_ptr< meshfile >, whorlData& );
 };
 
 template <>
@@ -183,7 +183,7 @@ public:
 
     virtual void parse( DOMElement& elem );
 
-    virtual void speak( std::shared_ptr< meshfile > );
+    virtual void speak( std::shared_ptr< meshfile >, whorlData& );
 };
 
 class GetConfig
@@ -194,7 +194,7 @@ public:
     void readConfigFile(string&);
 
     void parse( DOMElement& );
-    void speak( std::shared_ptr< meshfile > );
+    void speak( std::shared_ptr< meshfile >, whorlData& );
     void clear();
 
     char* m_Whorls{ nullptr };
@@ -221,7 +221,7 @@ class deriv< rendering, node > : public xmlNodeBase< rendering, node >
 public:
     virtual void parse( DOMElement& elem ) { xmlBase::parse( elem ); }
 
-    void speak( std::shared_ptr< meshfile > ) { cout << "Unrelated 3" << endl;  }
+    void speak( std::shared_ptr< meshfile >, whorlData& ) { cout << "Unrelated 3" << endl;  }
 };
 
 template <>
@@ -230,7 +230,7 @@ class deriv< rendering, curve > : public xmlNodeBase< rendering, curve >
 public:
     virtual void parse( DOMElement& elem ) { xmlBase::parse( elem ); }
 
-    void speak( std::shared_ptr< meshfile > ) { cout << "Unrelated 4" << endl; }
+    void speak( std::shared_ptr< meshfile >, whorlData& ) { cout << "Unrelated 4" << endl; }
 };
 
 template < types n >
