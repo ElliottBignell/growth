@@ -185,7 +185,7 @@ void shapeCurve< SURF, COLOUR >::whorl()
 
     for( double& b: bands ) { b = banddistr( 0, 0 ); }
 
-    colour.setPigmentMap( std::make_shared< pigmentmap >( closedcircle, cone * whorls ) );
+    // colour.setPigmentMap( std::make_shared< pigmentmap >( closedcircle, cone * whorls ) );
 
     const float jerk = 1.0;
     //const float jerk = 1.0 / 3.0;
@@ -223,6 +223,8 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, MF& norms, float ce
 {
     unsigned int size = curve.size2();
     unsigned int step = size * 2;
+
+    assert( 0 != whorls );
 
     for ( unsigned int whorlpos = 0; whorlpos < size; whorlpos++ ) {
 
@@ -334,7 +336,7 @@ void shapeCurve< SURF, COLOUR >::addStep( bezier &bz, MF& wallSegment, const uns
 
     float deriv_x = rZ( 0, 0 );
     float deriv_y = rZ( 0, 1 );
-    float atan_t = pow( pow( deriv_x, 2 + pow( deriv_y, 2) ), 0.5 );
+    float atan_t = pow( pow( deriv_x, 2 ) + pow( deriv_y, 2 ), 0.5 );
 
     N( 0 ) = deriv_x / atan_t;
     N( 1 ) = deriv_y / atan_t;

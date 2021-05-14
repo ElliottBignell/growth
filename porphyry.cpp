@@ -7,7 +7,7 @@
 /// Models for the simulations of the color pattern on the shells of mollusks
 /// see also Meinhardt,H. and Klingler,M. (1987) J. theor. Biol 126, 63-69
 /// see also H.Meinhardt "Algorithmic beauty of sea shells"
-/// (Springer Verlag) (c) H.Meinhardt, Tübingen
+/// (Springer Verlag) (c) H.Meinhardt, Tï¿½bingen
 
 ///This is a short version of a program for the simulations of the color
 ///patterns on tropical sea shells, here //Oliva porphyria'.
@@ -20,7 +20,7 @@
 
 ///The program runs with the interpreter QBASIC, but this is very slow.
 ///Better are the compiler Power Basic, Microsoft QB 4.5, Professional
-///Basic 7.1, and Visual Basic für DOS. A compiled version is included
+///Basic 7.1, and Visual Basic fï¿½r DOS. A compiled version is included
 
 #include <iostream>
 #include <boost/math/special_functions/fpclassify.hpp>

@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <cmath>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/numeric/ublas/operation.hpp>
@@ -76,6 +77,10 @@ ostream& operator<<( ostream& os, const state s )
 
 ostream& operator<<( ostream& os, const std::vector< matrix< float > >::reference p )
 {
+    assert( !isnan( p( 0, 0 ) ) );
+    assert( !isnan( p( 0, 1 ) ) );
+    assert( !isnan( p( 0, 2 ) ) );
+
     os << "<" 
        << p( 0, 0 )
        << ","

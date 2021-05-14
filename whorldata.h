@@ -8,6 +8,12 @@
 #ifndef __WHORLDATA_H_INCLUDED_
 #define __WHORLDATA_H_INCLUDED_
 
+#define _GNU_SOURCE 1
+
+#include <fenv.h>
+
+int feenableexcept(int excepts);
+
 using namespace std;
 using namespace boost::numeric::ublas;
 

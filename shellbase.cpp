@@ -44,7 +44,7 @@ int main()
 using namespace std;
 using namespace boost::numeric::ublas;
 
-std::shared_ptr< meshfile > test;
+std::shared_ptr< meshfile > outputMeshFile;
 
 class cell
 {
@@ -159,6 +159,8 @@ void tokenise(const std::string& in, const std::string& delims, StrList& tokens)
 
 int main( int argc, char **argv )
 {
+    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW );
+
     int c;
 
     string filename   = "meshpov.pov" ;
@@ -295,23 +297,23 @@ int main( int argc, char **argv )
 
     static const boost::regex x3dfile( ".*\\.x3d" ); 
 
-    boost::match_results<std::string::const_iterator> results;
+    boost::match_results< string::const_iterator > results;
 
     if ( boost::regex_match( filename, results, x3dfile ) ) {
-        test = std::shared_ptr< meshfile >( std::make_shared< meshx3d >( filename ) );
+        outputMeshFile = shared_ptr< meshfile >( make_shared< meshx3d >( filename ) );
     }
     else {
-        test = std::shared_ptr< meshfile >( std::make_shared< meshpov >( filename ) );
+        outputMeshFile = shared_ptr< meshfile >( make_shared< meshpov >( filename ) );
     }
 
     for ( auto curve: curveDefinitions ) {
 
-        shapeCurve< outside, wedgescol   > outer( test, *curve, data );
+        shapeCurve< outside, wedgescol   > outer( outputMeshFile, *curve, data );
         outer.whorl();
     }
 
-    //shapeCurve< outside, peakcol   > outer( test, curveFile( "outer.dat" ) );
-    // shapeCurve<  inside, insidecol > inner( test, curveFile( "inner.dat" ) );
+    //shapeCurve< outside, peakcol   > outer( outputMeshFile, curveFile( "outer.dat" ) );
+    // shapeCurve<  inside, insidecol > inner( outputMeshFile, curveFile( "inner.dat" ) );
 
     //    outer.stitchToCurve( inner.shape, inner.normals, 0, outer.point );
     //    outer.stitchToCurve( inner.shape, inner.normals, 0, inner.point );
@@ -321,10 +323,10 @@ int main( int argc, char **argv )
         GetConfig appConfig;
 
         appConfig.readConfigFile( configFile );
-        appConfig.speak( test, data );
+        appConfig.speak( outputMeshFile, data );
         appConfig.clear();
     
-        std::cout << "Done" << std::endl;
+        cout << "Done" << endl;
 
         /* xmlDeriv< xml, curve > elem2; */
         /* elem2.speak(); */
@@ -334,7 +336,7 @@ int main( int argc, char **argv )
         /* t2->speak(); */
     }
 
-    test->close();
+    outputMeshFile->close();
 
     return -1;
 }
