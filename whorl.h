@@ -71,8 +71,11 @@ private:
     //! Outputs a triangle to the mesh based on three points and a colour
     void triangle( unsigned int, unsigned int pos1, unsigned int pos2, unsigned int colour );
 
-    //! Outputs a triangle and normal  to the mesh based on three points and a colour
-    void triangle( matrix_slice< matrix< float > >&, matrix_slice< matrix< float > >&, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
+    //! Outputs a triangle's vertices  to the mesh based on three points and a colour
+    void trianglePoints( matrix_slice< matrix< float > >& );
+
+    //! Outputs a triangle's indices  to the mesh based on three points and a colour
+    void triangleIndices( matrix_slice< matrix< float > >&, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
 
     //! Computes a line segment of the Bezier curve using matrix transformations
     void addStep( bezier &, MF& wallS, const unsigned int, const float );
@@ -233,8 +236,9 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, MF& norms, float ce
         matrix_slice< MF > s( curve, slice( whorlpos, 1, 1 ) , slice( 0, 1, 4 ) );
         matrix_slice< MF > n( norms, slice( whorlpos, 1, 1 ) , slice( 0, 1, 4 ) );
 
-        triangle( s, n, index, index + 1,        index + step + 1, colour( angleX, cell / whorls ) );
-        triangle( s, n, index, index + step + 1, index + step,     colour( angleX, cell / whorls ) );
+        trianglePoints( s );
+        triangleIndices( n, index, index + step + 1, index + step,     colour( angleX, cell / whorls ) );
+        triangleIndices( n, index, index + 1,        index + step + 1, colour( angleX, cell / whorls ) );
 
         index++;
 
@@ -283,28 +287,37 @@ void shapeCurve< SURF, COLOUR >::triangle( unsigned int pos, unsigned int pos1, 
 /*! 
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::triangle( matrix_slice< matrix< float > >& q, matrix_slice< matrix< float > >& n, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
+void shapeCurve< SURF, COLOUR >::trianglePoints( matrix_slice< matrix< float > >& q )
 {
-    matrix< int > indices( 1, 4 );
-    matrix< float > Q( 1, 4 );
-    matrix< float > N( 1, 4 );
-
-    indices( 0, 0 ) = pos;
-    indices( 0, 1 ) = pos1;
-    indices( 0, 2 ) = pos2;
-    indices( 0, 3 ) = 1;
+    matrix< float  > Q( 1, 4 );
 
     Q( 0, 0 ) = q( 0, 0 );
     Q( 0, 1 ) = q( 0, 1 );
     Q( 0, 2 ) = q( 0, 2 );
     Q( 0, 3 ) = 1;
 
+    (*meshFile) << Q;
+}
+
+/*!
+*/
+template < typename SURF, typename COLOUR >
+void shapeCurve< SURF, COLOUR >::triangleIndices( matrix_slice< matrix< float > >& n, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
+{
+    matrix< int > indices( 1, 4 );
+    matrix< double > N( 1, 4 );
+
+    indices( 0, 0 ) = pos;
+    indices( 0, 1 ) = pos1;
+    indices( 0, 2 ) = pos2;
+    indices( 0, 3 ) = 1;
+
     N( 0, 0 ) = n( 0, 0 );
     N( 0, 1 ) = n( 0, 1 );
     N( 0, 2 ) = n( 0, 2 );
     N( 0, 3 ) = 1;
 
-    (*meshFile) << Q << N << meshpov::index( indices, colour );
+    (*meshFile) << N << meshpov::index( indices, colour );
 }
 
 /*! 
