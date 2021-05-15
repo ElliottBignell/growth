@@ -200,7 +200,7 @@ void shapeCurve< SURF, COLOUR >::whorl()
         distnull f;
         //flare f( closedcircle / 4.0 );
 
-        thetaLimit += pi * 4.0 * jerk;
+        thetaLimit += pi * 2.0 * jerk;
         singleWhorl( thetaLimit, banddistr, theta );
     }
 
