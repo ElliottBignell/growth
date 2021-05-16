@@ -233,7 +233,7 @@ int main( int argc, char **argv )
                 break;
             case 'C':
                 sscanf( optarg, "%f", &x );
-                cone = x;
+                // cone = x;
                 break;
             case 'k':
                 sscanf( optarg, "%f", &x );
@@ -243,6 +243,8 @@ int main( int argc, char **argv )
 
                 bezierpts = optarg;
                 curveDefinitions.clear();
+
+                tokenise( bezierpts, ";" , vtrToken);
 
                 for (auto &subExpression : vtrToken) {
                     curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
@@ -265,7 +267,7 @@ int main( int argc, char **argv )
 
     whorlData::circle = static_cast< unsigned int >( 2.0f * pi / whorlData::degZ );
     whorlData::degY = whorlData::degZ * 0.00375 / ( 2.0f * pi / 360.0f );
-    cone = whorls * 2.0f * pi / (whorlData::degY * whorlData::degZ);
+    // cone = whorls * 2.0f * pi / (whorlData::degY * whorlData::degZ);
     //shrink = shrinkstage;
     data.shrink = data.shrinkstage;
     whorlData::shrinkystage = pow( data.shrinkstage, 1.0 / whorlData::circle );
