@@ -51,10 +51,16 @@ class shapeCurve : public shapes
 
     whorlData &data;
 
-    class stepper {
+    class stepperBase {
     public:
         //! Computes a line segment of the Bezier curve using matrix transformations
-        void addStep( shapeCurve&, bezier&, MF&, const unsigned int, const float );
+        virtual void addStep( shapeCurve&, bezier&, MF&, const unsigned int, const float ) = 0;
+    };
+
+    class stepper : public stepperBase {
+    public:
+        //! Computes a line segment of the Bezier curve using matrix transformations
+        virtual void addStep( shapeCurve&, bezier&, MF&, const unsigned int, const float );
     };
 
     typedef matrix_row< matrix< float > > row;
@@ -135,7 +141,7 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
     unsigned int index = 0;
     unsigned int startOfSection = halfcircle;
 
-    stepper curveStepper;
+    unique_ptr< stepperBase > curveStepper( new stepper );
 
     for( MF& wallStep: wallPoints ) { 
 
@@ -145,7 +151,7 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
                 break;
             }
 
-            curveStepper.addStep( *this, bz, wallStep, index++, startOfSection );
+            curveStepper->addStep( *this, bz, wallStep, index++, startOfSection );
         }
 
         startOfSection += halfcircle;
