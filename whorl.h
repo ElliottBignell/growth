@@ -51,6 +51,14 @@ class shapeCurve : public shapes
 
     whorlData &data;
 
+    class stepper {
+    public:
+        //! Computes a line segment of the Bezier curve using matrix transformations
+        void addStep( shapeCurve&, bezier&, MF&, const unsigned int, const float );
+    };
+
+    typedef matrix_row< matrix< float > > row;
+
 public:
     shapeCurve( std::shared_ptr< meshfile >, const curveDef&, whorlData& );
     ~shapeCurve();
@@ -70,13 +78,10 @@ private:
     void triangle( unsigned int, unsigned int pos1, unsigned int pos2, unsigned int colour );
 
     //! Outputs a triangle's vertices  to the mesh based on three points and a colour
-    void trianglePoints( matrix_row< matrix< float > >& );
+    void trianglePoints( row& );
 
     //! Outputs a triangle's indices  to the mesh based on three points and a colour
-    void triangleIndices( matrix_row< matrix< float > >&, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
-
-    //! Computes a line segment of the Bezier curve using matrix transformations
-    void addStep( bezier &, MF& wallS, const unsigned int, const float );
+    void triangleIndices( row&, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
 
     //! Fills the rotation matrices based on the thetaX, -Y and -Z values
     void initRotation( float );
@@ -130,6 +135,8 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
     unsigned int index = 0;
     unsigned int startOfSection = halfcircle;
 
+    stepper curveStepper;
+
     for( MF& wallStep: wallPoints ) { 
 
         for ( unsigned int n = 0; n <= halfcircle; n++ ) {
@@ -138,7 +145,7 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
                 break;
             }
 
-            addStep( bz, wallStep, index++, startOfSection );
+            curveStepper.addStep( *this, bz, wallStep, index++, startOfSection );
         }
 
         startOfSection += halfcircle;
@@ -248,7 +255,7 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, float cell, unsigne
 
         float angleX = static_cast< float >( whorlpos ) / size * pi * 2.0;
 
-        matrix_row< matrix<float>> mc( curve, whorlpos );
+        row mc( curve, whorlpos );
 
         trianglePoints( mc );
 
@@ -290,7 +297,7 @@ void shapeCurve< SURF, COLOUR >::triangle( unsigned int pos, unsigned int pos1, 
 /*! 
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::trianglePoints( matrix_row< matrix< float > >& q )
+void shapeCurve< SURF, COLOUR >::trianglePoints( row& q )
 {
     matrix< float  > Q( 1, 4 );
 
@@ -305,7 +312,7 @@ void shapeCurve< SURF, COLOUR >::trianglePoints( matrix_row< matrix< float > >& 
 /*!
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::triangleIndices( matrix_row< matrix< float > >& n, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
+void shapeCurve< SURF, COLOUR >::triangleIndices( row& n, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
 {
     matrix< int > indices( 1, 4 );
     matrix< double > N( 1, 4 );
@@ -326,14 +333,14 @@ void shapeCurve< SURF, COLOUR >::triangleIndices( matrix_row< matrix< float > >&
 /*! 
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::addStep( bezier &bz, MF& wallSegment, const unsigned int n, const float section )
+void shapeCurve< SURF, COLOUR >::stepper::addStep( shapeCurve< SURF, COLOUR >& parent, bezier &bz, MF& wallSegment, const unsigned int n, const float section )
 {
     float f = static_cast< float >( n ) / section;
 
     MF         t( 1, 4 );
-    matrix_row< matrix< float >> s( shape,   n );
-    matrix_row< matrix< float >> r( record,  n );
-    matrix_row< matrix< float >> N( normals, n );
+    row s( parent.shape,   n );
+    row r( parent.record,  n );
+    row N( parent.normals, n );
 
     t( 0, 0 ) = 1;
     t( 0, 1 ) = f;
