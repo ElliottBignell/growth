@@ -14,8 +14,7 @@
 #include <vector>
 #include "whorldata.h"
 #include "shapes.h"
-
-typedef matrix< float > MF;
+#include "casteljau.h"
 
 static unsigned int whorls = 3;
 static string bezierpts = "{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8},{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8};{0.0,5.8},{-1.0,5.8},{1.0,-13.0},{1.0,-13.0}";
@@ -117,7 +116,6 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
 
         for ( unsigned int n = 0; n < 4; n++ ) {
 
-            // Outer wall
             wallSegment( n, 0 ) =  wall[ m   ].first * xlim;
             wallSegment( n, 1 ) =  wall[ m++ ].second;
         }
@@ -130,6 +128,7 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
     const float halfcircle   = static_cast< float >( whorlData::circle ) / segments;
 
     unsigned int index = 0;
+    unsigned int startOfSection = halfcircle;
 
     for( MF& wallStep: wallPoints ) { 
 
@@ -139,8 +138,10 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
                 break;
             }
 
-            addStep( bz, wallStep, index++, halfcircle );
+            addStep( bz, wallStep, index++, startOfSection );
         }
+
+        startOfSection += halfcircle;
     }
 
 }
@@ -212,6 +213,27 @@ void shapeCurve< SURF, COLOUR >::whorl()
     }
 }
 
+/*! Draws the curve point-by-point, stitches it back to the record of the previous
+    point and then scales the curve down prior to the next iteration. Iterates round
+    the primary axis until a whole whorl is completed.
+*/
+template < typename SURF, typename COLOUR >
+void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution&, double& theta )
+{
+    while ( theta < thetaLimit ) {
+
+        meshpov::triangle simple( prod( rotate, scale ) );
+        meshpov::triangle composite( prod( translate, simple ) );
+
+        record  = prod( record,  composite );
+        normals = prod( normals, composite );
+
+        stitchToCurve( record, theta, point );
+
+        theta += whorlData::degZ;
+    }
+}
+
 /*! 
     Draws alternating triangles between the corresponding points of two curves, 
     taking the colour from a mapping based on the X and Y positions
@@ -248,29 +270,6 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, float cell, unsigne
     }
 
     return cell;
-}
-
-/*! Draws the curve point-by-point, stitches it back to the record of the previous
-    point and then scales the curve down prior to the next iteration. Iterates round
-    the primary axis until a whole whorl is completed.
-*/
-template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution&, double& theta )
-{
-    unsigned int n;
-
-    while ( theta < thetaLimit ) {
-
-        meshpov::triangle simple( prod( rotate, scale ) );
-        meshpov::triangle composite( prod( translate, simple ) );
-
-        record  = prod( record,  composite ); 
-        normals = prod( normals, composite );
-
-        stitchToCurve( record, theta, point );
-
-        theta += whorlData::degZ;
-    }
 }
 
 /*! 

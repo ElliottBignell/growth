@@ -11,6 +11,8 @@
 
 using namespace boost::numeric::ublas;
 
+typedef matrix< float > MF;
+
 //! Abstracts a shape or aggregate of shapes combined into a single render
 /*! 
 */
