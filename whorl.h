@@ -52,15 +52,34 @@ class shapeCurve : public shapes
     whorlData &data;
 
     class stepperBase {
+    protected:
+        shapeCurve& parent;
+        bezier& bz;
+
     public:
+        stepperBase( shapeCurve& p, bezier& b )
+            : parent( p )
+            , bz( b )
+        {
+
+        }
+
         //! Computes a line segment of the Bezier curve using matrix transformations
-        virtual void addStep( shapeCurve&, bezier&, MF&, const unsigned int, const float ) = 0;
+        virtual void addStep( MF&, const unsigned int, const float ) = 0;
     };
 
-    class stepper : public stepperBase {
+    class stepperPolyBezier : public stepperBase {
     public:
-        //! Computes a line segment of the Bezier curve using matrix transformations
-        virtual void addStep( shapeCurve&, bezier&, MF&, const unsigned int, const float );
+        stepperPolyBezier( shapeCurve& p, bezier& b ) : stepperBase( p, b ) {}
+
+        virtual void addStep( MF&, const unsigned int, const float );
+    };
+
+    class stepperCompoundBezier : public stepperBase {
+    public:
+        stepperCompoundBezier( shapeCurve& p, bezier& b ) : stepperBase( p, b ) {}
+
+        virtual void addStep( MF&, const unsigned int, const float );
     };
 
     typedef matrix_row< matrix< float > > row;
@@ -141,7 +160,7 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
     unsigned int index = 0;
     unsigned int startOfSection = halfcircle;
 
-    unique_ptr< stepperBase > curveStepper( new stepper );
+    unique_ptr< stepperBase > curveStepper( make_unique< stepperCompoundBezier >( *this, bz ) );
 
     for( MF& wallStep: wallPoints ) { 
 
@@ -151,7 +170,7 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
                 break;
             }
 
-            curveStepper->addStep( *this, bz, wallStep, index++, startOfSection );
+            curveStepper->addStep( wallStep, index++, startOfSection );
         }
 
         startOfSection += halfcircle;
@@ -336,24 +355,67 @@ void shapeCurve< SURF, COLOUR >::triangleIndices( row& n, unsigned int pos, unsi
     (*meshFile) << N << meshpov::index( indices, colour );
 }
 
-/*! 
+/*!
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::stepper::addStep( shapeCurve< SURF, COLOUR >& parent, bezier &bz, MF& wallSegment, const unsigned int n, const float section )
+void shapeCurve< SURF, COLOUR >::stepperPolyBezier::addStep( MF& wallSegment, const unsigned int n, const float section )
 {
     float f = static_cast< float >( n ) / section;
 
     MF         t( 1, 4 );
-    row s( parent.shape,   n );
-    row r( parent.record,  n );
-    row N( parent.normals, n );
+    row s( this->parent.shape,   n );
+    row r( this->parent.record,  n );
+    row N( this->parent.normals, n );
 
     t( 0, 0 ) = 1;
     t( 0, 1 ) = f;
     t( 0, 2 ) = f * f;
     t( 0, 3 ) = f * t( 0, 2 );
 
-    MF tZ = prod( bz.get(), wallSegment );
+    MF tZ = prod( this->bz.get(), wallSegment );
+    MF rZ( prod( t, tZ ) );
+
+    r( 0 ) = s( 0 ) = rZ( 0, 0 );
+    r( 1 ) = s( 1 ) = rZ( 0, 1 );
+    r( 2 ) = s( 2 ) = 0;
+    r( 3 ) = s( 3 ) = 1;
+
+    float deriv_x = rZ( 0, 0 );
+    float deriv_y = rZ( 0, 1 );
+    float atan_t = pow( pow( deriv_x, 2 ) + pow( deriv_y, 2 ), 0.5 );
+
+    if ( atan_t != 0 ) {
+
+        N(0) = deriv_x / atan_t;
+        N(1) = deriv_y / atan_t;
+    }
+    else {
+
+        N(0) = 1;
+        N(1) = 1;
+    }
+    N( 2 ) = 0;
+    N( 3 ) = 1;
+}
+
+/*! 
+*/
+template < typename SURF, typename COLOUR >
+void shapeCurve< SURF, COLOUR >::stepperCompoundBezier::addStep(  MF& wallSegment, const unsigned int n, const float section )
+{
+    float f = static_cast< float >( n ) / section;
+
+    MF         t( 1, 4 );
+    row s( this->parent.shape,   n );
+    row r( this->parent.record,  n );
+    row N( this->parent.normals, n );
+
+    t( 0, 0 ) = 1;
+    t( 0, 1 ) = f;
+    t( 0, 2 ) = f * f;
+    t( 0, 3 ) = f * t( 0, 2 );
+
+    MF tZ = prod( this->bz.get(), wallSegment );
     MF rZ( prod( t, tZ ) );
 
     r( 0 ) = s( 0 ) = rZ( 0, 0 );
