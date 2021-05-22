@@ -15,6 +15,7 @@
 #include "whorldata.h"
 #include "shapes.h"
 #include "casteljau.h"
+#include "stepper.h"
 
 static unsigned int whorls = 3;
 static string bezierpts = "{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8},{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8};{0.0,5.8},{-1.0,5.8},{1.0,-13.0},{1.0,-13.0}";
@@ -51,39 +52,6 @@ class shapeCurve : public shapes
 
     whorlData &data;
 
-    class stepperBase {
-    protected:
-        shapeCurve& parent;
-        bezier& bz;
-
-    public:
-        stepperBase( shapeCurve& p, bezier& b )
-            : parent( p )
-            , bz( b )
-        {
-
-        }
-
-        //! Computes a line segment of the Bezier curve using matrix transformations
-        virtual void addStep( MF&, const unsigned int, const float ) = 0;
-    };
-
-    class stepperPolyBezier : public stepperBase {
-    public:
-        stepperPolyBezier( shapeCurve& p, bezier& b ) : stepperBase( p, b ) {}
-
-        virtual void addStep( MF&, const unsigned int, const float );
-    };
-
-    class stepperCompoundBezier : public stepperBase {
-    public:
-        stepperCompoundBezier( shapeCurve& p, bezier& b ) : stepperBase( p, b ) {}
-
-        virtual void addStep( MF&, const unsigned int, const float );
-    };
-
-    typedef matrix_row< matrix< float > > row;
-
 public:
     shapeCurve( std::shared_ptr< meshfile >, const curveDef&, whorlData& );
     ~shapeCurve();
@@ -93,7 +61,7 @@ public:
     void whorl();
 
     //! Draws the triangles to link two curves into a closed strip
-    double stitchToCurve( MF&, float, unsigned int& );
+    double stitchToCurve( float, unsigned int& );
 
 private:
     //! Draws closed instances of the cross-sectional curve around a whole 360° loop
@@ -106,7 +74,7 @@ private:
     void trianglePoints( row& );
 
     //! Outputs a triangle's indices  to the mesh based on three points and a colour
-    void triangleIndices( row&, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
+    void triangleIndices( row, unsigned int, unsigned int pos1, unsigned int pos2, unsigned int );
 
     //! Fills the rotation matrices based on the thetaX, -Y and -Z values
     void initRotation( float );
@@ -127,42 +95,22 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
 
     initRotation( thetaY );
 
-    static const float xlim = abs( r );
     //    static const float ylim = xlim / 2.0;
 
-    std::vector < MF > wallPoints;
+    record.resize(  whorlData::circle + 1, 4 );
+    shape.resize(   whorlData::circle + 1, 4 );
+    normals.resize( whorlData::circle + 1, 4 );
 
-    record.resize(  whorlData::circle + 2, 4 );
-    shape.resize(   whorlData::circle + 2, 4 );
-    normals.resize( whorlData::circle + 2, 4 );
+    unique_ptr< stepperBase > curveStepper( make_unique< stepperCompoundBezier >( *this, bz ) );
 
-    unsigned int m = 0;
+    curveStepper->portionUpWhorl( wall );
 
-    unsigned int segments = wall.size();
-
-    MF wallSegment( 4, 2 );
-
-    for ( unsigned int segment = 0; segment < segments; segment++ ) {
-
-        for ( unsigned int n = 0; n < 4; n++ ) {
-
-            wallSegment( n, 0 ) =  wall[ m   ].first * xlim;
-            wallSegment( n, 1 ) =  wall[ m++ ].second;
-        }
-
-        m--;
-
-        wallPoints.push_back( wallSegment );
-    }
-
-    const float halfcircle   = static_cast< float >( whorlData::circle ) / segments;
+    const float halfcircle   = static_cast< float >( whorlData::circle ) / curveStepper->getPortionCOunt();
 
     unsigned int index = 0;
     unsigned int startOfSection = halfcircle;
 
-    unique_ptr< stepperBase > curveStepper( make_unique< stepperCompoundBezier >( *this, bz ) );
-
-    for( MF& wallStep: wallPoints ) { 
+    for( MF& wallStep: curveStepper->wallPoints ) {
 
         for ( unsigned int n = 0; n <= halfcircle; n++ ) {
 
@@ -170,12 +118,12 @@ shapeCurve< SURF, COLOUR >::shapeCurve( std::shared_ptr< meshfile >  mf, const c
                 break;
             }
 
-            curveStepper->addStep( wallStep, index++, startOfSection );
+            curveStepper->rotateDefiningPointŝ( wallStep, index, startOfSection );
+            curveStepper->addStep( index++ );
         }
 
         startOfSection += halfcircle;
     }
-
 }
 
 /*! 
@@ -260,7 +208,7 @@ void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution&, 
         record  = prod( record,  composite );
         normals = prod( normals, composite );
 
-        stitchToCurve( record, theta, point );
+        stitchToCurve( theta, point );
 
         theta += whorlData::degZ;
     }
@@ -271,16 +219,16 @@ void shapeCurve< SURF, COLOUR >::singleWhorl( double thetaLimit, distribution&, 
     taking the colour from a mapping based on the X and Y positions
 */
 template < typename SURF, typename COLOUR >
-double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, float cell, unsigned int& index )
+double shapeCurve< SURF, COLOUR >::stitchToCurve( float cell, unsigned int& index )
 {
-    unsigned int size = curve.size1();
+    unsigned int size = record.size1();
     unsigned int step = size * 2;
 
     for ( unsigned int whorlpos = 0; whorlpos < size; whorlpos++ ) {
 
         float angleX = static_cast< float >( whorlpos ) / size * pi * 2.0;
 
-        row mc( curve, whorlpos );
+        row mc( record, whorlpos );
 
         trianglePoints( mc );
 
@@ -290,10 +238,14 @@ double shapeCurve< SURF, COLOUR >::stitchToCurve( MF& curve, float cell, unsigne
             unsigned int diagonalPoint = index - step - 1;
             unsigned int facingPoint   = index - step;
 
-            matrix_row< MF > mr( curve, whorlpos );
+            matrix_row< MF > mr( record, whorlpos );
 
             triangleIndices( mr, index, diagonalPoint, facingPoint,   colour( angleX, cell / whorls ) );
             triangleIndices( mr, index, nextPoint,     diagonalPoint, colour( angleX, cell / whorls ) );
+
+            assert( mr( 0 ) < 10000 );
+            assert( mr( 1 ) < 10000 );
+            assert( mr( 2 ) < 10000 );
         }
 
         index++;
@@ -337,7 +289,7 @@ void shapeCurve< SURF, COLOUR >::trianglePoints( row& q )
 /*!
 */
 template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::triangleIndices( row& n, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
+void shapeCurve< SURF, COLOUR >::triangleIndices( row n, unsigned int pos, unsigned int pos1, unsigned int pos2, unsigned int colour )
 {
     matrix< int > indices( 1, 4 );
     matrix< double > N( 1, 4 );
@@ -353,92 +305,6 @@ void shapeCurve< SURF, COLOUR >::triangleIndices( row& n, unsigned int pos, unsi
     N( 0, 3 ) = 1;
 
     (*meshFile) << N << meshpov::index( indices, colour );
-}
-
-/*!
-*/
-template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::stepperPolyBezier::addStep( MF& wallSegment, const unsigned int n, const float section )
-{
-    float f = static_cast< float >( n ) / section;
-
-    MF         t( 1, 4 );
-    row s( this->parent.shape,   n );
-    row r( this->parent.record,  n );
-    row N( this->parent.normals, n );
-
-    t( 0, 0 ) = 1;
-    t( 0, 1 ) = f;
-    t( 0, 2 ) = f * f;
-    t( 0, 3 ) = f * t( 0, 2 );
-
-    MF tZ = prod( this->bz.get(), wallSegment );
-    MF rZ( prod( t, tZ ) );
-
-    r( 0 ) = s( 0 ) = rZ( 0, 0 );
-    r( 1 ) = s( 1 ) = rZ( 0, 1 );
-    r( 2 ) = s( 2 ) = 0;
-    r( 3 ) = s( 3 ) = 1;
-
-    float deriv_x = rZ( 0, 0 );
-    float deriv_y = rZ( 0, 1 );
-    float atan_t = pow( pow( deriv_x, 2 ) + pow( deriv_y, 2 ), 0.5 );
-
-    if ( atan_t != 0 ) {
-
-        N(0) = deriv_x / atan_t;
-        N(1) = deriv_y / atan_t;
-    }
-    else {
-
-        N(0) = 1;
-        N(1) = 1;
-    }
-    N( 2 ) = 0;
-    N( 3 ) = 1;
-}
-
-/*! 
-*/
-template < typename SURF, typename COLOUR >
-void shapeCurve< SURF, COLOUR >::stepperCompoundBezier::addStep(  MF& wallSegment, const unsigned int n, const float section )
-{
-    float f = static_cast< float >( n ) / section;
-
-    MF         t( 1, 4 );
-    row s( this->parent.shape,   n );
-    row r( this->parent.record,  n );
-    row N( this->parent.normals, n );
-
-    t( 0, 0 ) = 1;
-    t( 0, 1 ) = f;
-    t( 0, 2 ) = f * f;
-    t( 0, 3 ) = f * t( 0, 2 );
-
-    MF tZ = prod( this->bz.get(), wallSegment );
-    MF rZ( prod( t, tZ ) );
-
-    r( 0 ) = s( 0 ) = rZ( 0, 0 );
-    r( 1 ) = s( 1 ) = rZ( 0, 1 );
-    r( 2 ) = s( 2 ) = 0;
-    r( 3 ) = s( 3 ) = 1;
-
-    float deriv_x = rZ( 0, 0 );
-    float deriv_y = rZ( 0, 1 );
-    float atan_t = pow( pow( deriv_x, 2 ) + pow( deriv_y, 2 ), 0.5 );
-
-    if ( atan_t != 0 ) {
-
-        N(0) = deriv_x / atan_t;
-        N(1) = deriv_y / atan_t;
-    }
-    else {
-
-        N(0) = 1;
-        N(1) = 1;
-    }
-    N( 2 ) = 0;
-    N( 3 ) = 1;
 }
 
 /*! 

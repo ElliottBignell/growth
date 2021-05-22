@@ -5,29 +5,19 @@
 ///
 
 #include <iostream>
-#include <stdlib.h>
 #include <memory>
-#include <map>
 #include <functional>
 #include <iterator>
-#include <sstream>
 #include <vector>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/numeric/ublas/operation.hpp>
-#include "boost/tuple/tuple.hpp"
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
-#include <xercesc/util/PlatformUtils.hpp>
 #include <getopt.h>
 #include "gaussian.h"
 #include "distnull.h"
-#include "distflare.h"
 #include "curvefile.h"
 #include "curveofile.h"
 #include "surface.h"
 #include "surfacecol.h"
-#include "bezier.h"
 #include "whorl.h"
 #include "xml.h"
 
@@ -180,7 +170,7 @@ int main( int argc, char **argv )
 
     whorlData data;
 
-    while (1) {
+    while ( 1 ) {
 
         c = getopt(
                 argc, 
@@ -239,6 +229,19 @@ int main( int argc, char **argv )
                 sscanf( optarg, "%f", &x );
                 data.shrinkstage = x;
                 break;
+
+            case 'q':
+
+                bezierpts = optarg;
+                curveDefinitions.clear();
+
+                tokenise( bezierpts, ";" , vtrToken);
+
+                for (auto &subExpression : vtrToken) {
+                    curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
+                }
+                break;
+
             case 'p':
 
                 bezierpts = optarg;
@@ -314,11 +317,6 @@ int main( int argc, char **argv )
         outer.whorl();
     }
 
-    //shapeCurve< outside, peakcol   > outer( outputMeshFile, curveFile( "outer.dat" ) );
-    // shapeCurve<  inside, insidecol > inner( outputMeshFile, curveFile( "inner.dat" ) );
-
-    //    outer.stitchToCurve( inner.shape, inner.normals, 0, outer.point );
-    //    outer.stitchToCurve( inner.shape, inner.normals, 0, inner.point );
 
     if ( !configFile.empty() ) {
 
@@ -329,13 +327,6 @@ int main( int argc, char **argv )
         appConfig.clear();
     
         cout << "Done" << endl;
-
-        /* xmlDeriv< xml, curve > elem2; */
-        /* elem2.speak(); */
-
-        /* auto t2 = translate< xml, rendering >( elem2 ); */
-
-        /* t2->speak(); */
     }
 
     outputMeshFile->close();

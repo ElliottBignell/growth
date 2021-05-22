@@ -20,13 +20,14 @@
 ///
 ///
 
+#ifndef __BEZIER_H__
+#define __BEZIER_H__
+
+#include "shapes.h"
+
 using namespace std;
 using namespace boost::numeric::ublas;
 
-//#include <fstream>
-//#include <sstream>
-//#include <string>
-//
 //! The bezier class abstracts a two-dimensional matrix of float
 /*! values used to compute the points along a first-order bezier
     curve
@@ -76,4 +77,18 @@ public:
 
     const matrix< float >& get()       { return transform; } ///<Simple const getter to access the matrix as read-only
     const matrix< float >& getNormal() { return normal; }    ///<Simple const getter to access the normals matrix as read-only
+
+    const matrix< float > getPowers( float f )
+    {
+        MF t( 1, 4 );
+
+        t( 0, 0 ) = 1;
+        t( 0, 1 ) = f;
+        t( 0, 2 ) = f * f;
+        t( 0, 3 ) = f * t( 0, 2 );
+
+        return t;
+    }
 };
+
+#endif //__BEZIER_H__

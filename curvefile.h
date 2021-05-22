@@ -31,7 +31,8 @@ public:
         return pair< float, float >( xarray[ n ], yarray[ n ] );
     }
 
-    std::vector< float >::size_type size() const { return ( xarray.size() - 1 ) / 3.0; }
+    std::vector< float >::size_type  size() const { return ( xarray.size() - 1 ) / 3.0; }
+    std::vector< float >::size_type count() const { return   xarray.size();             }
 };
 
 class whorlData;
