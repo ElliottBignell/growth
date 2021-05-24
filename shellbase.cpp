@@ -14,8 +14,9 @@
 #include <getopt.h>
 #include "gaussian.h"
 #include "distnull.h"
-#include "curvefile.h"
-#include "curveofile.h"
+#include "filecurve.h"
+#include "filecurveo.h"
+#include "fileJSON.h"
 #include "surface.h"
 #include "surfacecol.h"
 #include "whorl.h"
@@ -125,8 +126,6 @@ public:
 float    cell::probability = 1.0;
 gaussian cell::gauss( 0.0, 0.5 );
 
-typedef std::list<std::string> StrList;
-
 void tokenise(const std::string& in, const std::string& delims, StrList& tokens)
 {
     tokens.clear();
@@ -147,6 +146,15 @@ void tokenise(const std::string& in, const std::string& delims, StrList& tokens)
     }
 }
 
+void fillDefinition( StrList vtrToken, std::vector< shared_ptr< curveExpression > > curveDefinitions )
+{
+    curveDefinitions.clear();
+
+    for (auto &subExpression : vtrToken) {
+        curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
+    }
+}
+
 int main( int argc, char **argv )
 {
     feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW );
@@ -156,17 +164,13 @@ int main( int argc, char **argv )
     string filename   = "meshpov.pov" ;
     string configFile;
 
-    static string bezierpts = "{1.0,-13.0},{1.0,-1.8},{1.0,5.8},{0.0,5.8},{1.0,-13.0},{1.0,-1.8},{1.0,5.8};{0.0,5.8},{-1.0,5.8},{1.0,-13.0},{1.0,-13.0}";
+    static string bezierpts = "{0,-10},{1.5,-10},{0.5,-8},{1.5,-7},{5.5,-6},{9.5,0},{2.5,0},{-3.5,0},{-0.5,-6},{1.5,-7},{-0.5,-8},{-1,-10},{0,-10}";
 
     StrList vtrToken;
-
-    tokenise( bezierpts, ";" , vtrToken);
-
     std::vector< shared_ptr< curveExpression > > curveDefinitions;
 
-    for (auto &subExpression : vtrToken) {
-        curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
-    }
+    tokenise( bezierpts, ";" , vtrToken);
+    fillDefinition( vtrToken, curveDefinitions );
 
     whorlData data;
 
@@ -175,7 +179,7 @@ int main( int argc, char **argv )
         c = getopt(
                 argc, 
                 argv, 
-                "dW:dX:dZ:tx:ty:r:R:T:C:k:b:p:q:o:X:?"
+                "dW:dX:dZ:tx:ty:r:R:T:C:k:j:b:p:q:o:X:?"
                 );
 
         if (c == -1)
@@ -194,14 +198,6 @@ int main( int argc, char **argv )
                 sscanf( optarg, "%f", &x );
                 whorls = x;
                 break;
-                //         case 'X':
-                //             sscanf( optarg, "%f", &x );
-                //             whorlData::degX = x;
-                //             break;
-                //case 'Y':
-                //sscanf( optarg, "%f", &x );
-                //whorlData::degY = x;
-                //break;
             case 'Z':
                 sscanf( optarg, "%f", &x );
                 whorlData::degZ = 2.0f * pi / ( 360.0f / x );
@@ -230,28 +226,25 @@ int main( int argc, char **argv )
                 data.shrinkstage = x;
                 break;
 
+            case 'j':
+                curveDefinitions = fileJSON( optarg ).getDefinitions();
+                break;
+
             case 'q':
 
                 bezierpts = optarg;
-                curveDefinitions.clear();
 
                 tokenise( bezierpts, ";" , vtrToken);
+                fillDefinition( vtrToken, curveDefinitions );
 
-                for (auto &subExpression : vtrToken) {
-                    curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
-                }
                 break;
 
             case 'p':
 
                 bezierpts = optarg;
-                curveDefinitions.clear();
 
                 tokenise( bezierpts, ";" , vtrToken);
-
-                for (auto &subExpression : vtrToken) {
-                    curveDefinitions.push_back( make_shared< curveExpression >( subExpression ) );
-                }
+                fillDefinition( vtrToken, curveDefinitions );
 
                 break;
 

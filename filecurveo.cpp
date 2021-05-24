@@ -1,3 +1,3 @@
-#include "curveofile.h"
+#include "filecurveo.h"
 
 string meshnull::noname;

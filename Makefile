@@ -11,8 +11,8 @@ $(shell   mkdir -p $(OUT))
 
 all: growth
 
-growth: $(OUT)/curveofile.o $(OUT)/shellbase.o $(OUT)/gaussian.o $(OUT)/porphyry.o $(OUT)/distbase.o $(OUT)/xml.o $(OUT)/shapes.o $(OUT)/surface.o $(OUT)/surfacecol.o $(OUT)/stepper.o $(OUT)/whorl.o $(OUT)/whorldata.o
-	$(CXX) $(INC) $(OUT)/shellbase.o $(OUT)/whorldata.o $(OUT)/whorl.o $(OUT)/surface.o $(OUT)/surfacecol.o $(OUT)/stepper.o $(OUT)/shapes.o $(OUT)/gaussian.o $(OUT)/porphyry.o $(OUT)/distbase.o $(OUT)/xml.o -o growth -lreadline -lcurses -ldl -lboost_regex -lboost_iostreams -lxerces-c
+growth: $(OUT)/filecurveo.o $(OUT)/fileJSON.o $(OUT)/gaussian.o $(OUT)/porphyry.o $(OUT)/distbase.o $(OUT)/xml.o $(OUT)/shapes.o $(OUT)/surface.o $(OUT)/surfacecol.o $(OUT)/stepper.o $(OUT)/whorl.o $(OUT)/whorldata.o $(OUT)/shellbase.o
+	$(CXX) $(INC) $(OUT)/filecurveo.o $(OUT)/fileJSON.o $(OUT)/whorldata.o $(OUT)/whorl.o $(OUT)/surface.o $(OUT)/surfacecol.o $(OUT)/stepper.o $(OUT)/shapes.o $(OUT)/gaussian.o $(OUT)/porphyry.o $(OUT)/distbase.o $(OUT)/xml.o $(OUT)/shellbase.o -o growth -lreadline -lcurses -ldl -lboost_regex -lboost_iostreams -lxerces-c
 $(OUT)/shapes.o: shapes.cpp
 	$(CXX) $(DEBUGFLAGS) $(CXXFLAGS) $(INC) -lreadline -lncurses -ldl -fconcepts-ts -std=c++17 -o $@ shapes.cpp
 $(OUT)/whorldata.o: whorldata.cpp
@@ -23,8 +23,10 @@ $(OUT)/surface.o: surface.cpp
 	$(CXX) $(DEBUGFLAGS) $(CXXFLAGS) $(INC) -lreadline -lncurses -ldl -fconcepts-ts -std=c++17 -o $@ surface.cpp
 $(OUT)/stepper.o: stepper.cpp
 	$(CXX) $(DEBUGFLAGS) $(CXXFLAGS) $(INC) -lreadline -lncurses -ldl -fconcepts-ts -std=c++17 -o $@ stepper.cpp
-$(OUT)/curveofile.o: curveofile.cpp
-	$(CXX) $(DEBUGFLAGS) $(CXXFLAGS) $(INC) -lreadline -lncurses -ldl -fconcepts-ts -std=c++17 -o $@ curveofile.cpp
+$(OUT)/filecurveo.o: filecurveo.cpp
+	$(CXX) $(DEBUGFLAGS) $(CXXFLAGS) $(INC) -lreadline -lncurses -ldl -fconcepts-ts -std=c++17 -o $@ filecurveo.cpp
+$(OUT)/fileJSON.o: fileJSON.cpp
+	$(CXX) $(DEBUGFLAGS) $(CXXFLAGS) $(INC) -lreadline -lncurses -ldl -fconcepts-ts -std=c++17 -o $@ fileJSON.cpp
 $(OUT)/shellbase.o: shellbase.cpp
 	$(CXX) $(DEBUGFLAGS) $(CXXFLAGS) $(INC) -lreadline -lncurses -ldl -fconcepts-ts -std=c++17 -o $@ shellbase.cpp
 $(OUT)/gaussian.o: gaussian.cpp

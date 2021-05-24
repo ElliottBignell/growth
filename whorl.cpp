@@ -21,8 +21,8 @@
 #include "porphyry.h"
 #include "distnull.h"
 #include "distbase.h"
-#include "curvefile.h"
-#include "curveofile.h"
+#include "filecurve.h"
+#include "filecurveo.h"
 #include "whorl.h"
 #include "whorldata.h"
 

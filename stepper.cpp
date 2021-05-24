@@ -1,9 +1,11 @@
-#include <boost/numeric/ublas/matrix.hpp>
+#include <list>
 #include <boost/regex.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include "distbase.h"
 #include "gaussian.h"
 #include "distnull.h"
-#include "curvefile.h"
-#include "curveofile.h"
+#include "filecurve.h"
+#include "filecurveo.h"
 #include "surface.h"
 #include "whorl.h"
 

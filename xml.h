@@ -24,7 +24,7 @@
 #include <memory>
 #include <map>
 
-#include "curveofile.h"
+#include "filecurveo.h"
 
 using namespace xercesc;
 using namespace std;

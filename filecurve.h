@@ -10,6 +10,8 @@
 
 using namespace std;
 
+typedef std::list<std::string> StrList;
+
 //!  curveDef base class representing curves as a slightly smart array of points
 /*!
   curveDef classes abstract a curve as a series of x-y values. On construction, the class
